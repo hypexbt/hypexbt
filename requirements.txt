@@ -1,15 +1,13 @@
 numpy==1.23.5
+ta-lib==0.4.24
 tweepy==4.14.0
 APScheduler==3.10.4
 requests==2.31.0
 websockets==12.0
 pandas==2.1.1
-ta-lib==0.4.24
 pytest==7.4.3
 pytest-mock==3.12.0
 python-dotenv==1.0.0
 black==23.10.1
 flake8==6.1.0
 slack-sdk==3.24.0
-
-
