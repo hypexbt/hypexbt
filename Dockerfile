@@ -3,11 +3,26 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies + TA-Lib native library build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
+    wget \
+    make \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
     && rm -rf /var/lib/apt/lists/*
+
+# Download, build, and install TA-Lib native C library
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xvzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
 # Copy requirements file
 COPY requirements.txt .
@@ -28,4 +43,3 @@ USER appuser
 
 # Command to run the scheduler
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
-
