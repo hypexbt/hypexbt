@@ -1,9 +1,9 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies + TA-Lib native library build tools
+# Install system dependencies + build tools for TA-Lib
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
