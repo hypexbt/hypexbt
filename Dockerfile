@@ -1,57 +1,34 @@
 FROM python:3.10-slim
 
-# Set working directory to /app
 WORKDIR /app
 
-# Install system dependencies + build tools for TA-Lib
+# Install system dependencies (for TA-Lib)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    wget \
-    make \
-    build-essential \
-    autoconf \
-    automake \
-    libtool \
-    && rm -rf /var/lib/apt/lists/*
+    gcc g++ wget make build-essential autoconf automake libtool && \
+    rm -rf /var/lib/apt/lists/*
 
-# Download, build, and install TA-Lib native C library
+# Build and install TA-Lib C library
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     tar -xvzf ta-lib-0.4.0-src.tar.gz && \
-    cd ta-lib && \
-    ./configure --prefix=/usr && \
-    make && \
-    make install && \
+    cd ta-lib && ./configure --prefix=/usr && make && make install && \
     cd .. && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
 # Copy project files
 COPY . .
 
-# Install compatible numpy version first
+# Install numpy first
 RUN pip install --no-cache-dir numpy==1.23.5
 
-# Install other Python dependencies (excluding numpy)
+# Then install other Python dependencies (without numpy)
 RUN pip install --no-cache-dir --no-deps -r requirements.txt
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/hypexbt
+ENV PYTHONPATH=/app
 
-# Create a non-root user
+# Create non-root user
 RUN useradd -m appuser
 USER appuser
 
-# Change working directory to where bot/ is located
-WORKDIR /app/hypexbt
-
-# Run the bot
-CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
-
-# Set PYTHONPATH so Python can resolve the bot package
-ENV PYTHONPATH=/app
-
-# Ensure correct working directory
-WORKDIR /app
-
-# Run the main bot module
+# Run your main bot module
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
