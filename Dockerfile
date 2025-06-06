@@ -1,7 +1,7 @@
 FROM python:3.10-slim
 
-# Set working directory
-WORKDIR /app
+# Set working directory inside the container
+WORKDIR /app/hypexbt
 
 # Install system dependencies + build tools for TA-Lib
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,21 +24,18 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     make install && \
     cd .. && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy project code into the container
+COPY . /app/hypexbt
 
 # Install compatible numpy version first
 RUN pip install --no-cache-dir numpy==1.23.5
 
-# Install rest of the Python dependencies without re-installing numpy
+# Install remaining Python dependencies without reinstalling numpy
 RUN pip install --no-cache-dir --no-deps -r requirements.txt
-
-# Copy application code
-COPY . .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/hypexbt
 
 # Create non-root user
 RUN useradd -m appuser
