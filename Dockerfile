@@ -27,8 +27,11 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
 # Copy requirements file
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install compatible numpy version first
+RUN pip install --no-cache-dir numpy==1.23.5
+
+# Install rest of the Python dependencies without re-installing numpy
+RUN pip install --no-cache-dir --no-deps -r requirements.txt
 
 # Copy application code
 COPY . .
@@ -41,5 +44,5 @@ ENV PYTHONPATH=/app
 RUN useradd -m appuser
 USER appuser
 
-# Command to run the scheduler
+# Default command (adjust if needed)
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
