@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app/hypexbt
 
 # Install system dependencies + build tools for TA-Lib
@@ -24,14 +24,13 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     make install && \
     cd .. && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
-# Copy project code into the container
-COPY . /app/hypexbt
-
-# Install compatible numpy version first
+# Copy requirements and install Python dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir numpy==1.23.5
+RUN pip install --no-cache-dir --no-deps -r /app/requirements.txt
 
-# Install remaining Python dependencies without reinstalling numpy
-RUN pip install --no-cache-dir --no-deps -r requirements.txt
+# Copy the full app directory (including hypexbt/)
+COPY . /app
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -41,5 +40,5 @@ ENV PYTHONPATH=/app/hypexbt
 RUN useradd -m appuser
 USER appuser
 
-# Default command (adjust if needed)
+# Default command
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
