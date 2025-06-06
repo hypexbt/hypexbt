@@ -46,3 +46,12 @@ WORKDIR /app/hypexbt
 
 # Run the bot
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
+
+# Set PYTHONPATH so Python can resolve the bot package
+ENV PYTHONPATH=/app
+
+# Ensure correct working directory
+WORKDIR /app
+
+# Run the main bot module
+CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
