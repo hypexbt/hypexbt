@@ -34,5 +34,12 @@ USER appuser
 # Use WORKDIR where bot/ folder exists
 WORKDIR /app/hypexbt
 
+
 # Command to run your bot
+RUN echo "Listing /app:"
+RUN ls -l /app
+RUN echo "Listing /app/hypexbt:"
+RUN ls -l /app/hypexbt
+RUN echo "Listing /app/hypexbt/bot:"
+RUN ls -l /app/hypexbt/bot
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
