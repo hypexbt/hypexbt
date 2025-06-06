@@ -1,13 +1,21 @@
 FROM python:3.10-slim
 
+# Set working directory to /app
 WORKDIR /app
 
-# Install system dependencies for TA-Lib
+# Install system dependencies + build tools for TA-Lib
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ wget make build-essential autoconf automake libtool \
+    gcc \
+    g++ \
+    wget \
+    make \
+    build-essential \
+    autoconf \
+    automake \
+    libtool \
     && rm -rf /var/lib/apt/lists/*
 
-# Install TA-Lib from source
+# Download, build, and install TA-Lib native C library
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     tar -xvzf ta-lib-0.4.0-src.tar.gz && \
     cd ta-lib && \
@@ -16,16 +24,25 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     make install && \
     cd .. && rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
+# Copy project files
 COPY . .
 
-# Confirm files are present
-RUN ls -l /app && cat requirements.txt
-
-# Install numpy first (TA-Lib needs this order)
+# Install compatible numpy version first
 RUN pip install --no-cache-dir numpy==1.23.5
 
-# Install remaining dependencies
+# Install other Python dependencies (excluding numpy)
 RUN pip install --no-cache-dir --no-deps -r requirements.txt
 
-# Run your app
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/hypexbt
+
+# Create a non-root user
+RUN useradd -m appuser
+USER appuser
+
+# Change working directory to where bot/ is located
+WORKDIR /app/hypexbt
+
+# Run the bot
 CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
