@@ -41,4 +41,5 @@ RUN useradd -m appuser
 USER appuser
 
 # Run the scheduler
-CMD ["python", "-m", "bot.main", "--mode", "scheduler"]
+CMD ["python", "bot/main.py", "--mode", "scheduler"]
+
