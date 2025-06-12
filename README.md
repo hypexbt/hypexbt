@@ -108,6 +108,8 @@ docker-compose down
 Create a `.env` file with the following variables:
 
 ```
+
+
 # Twitter API credentials
 X_API_KEY=your_api_key
 X_API_SECRET=your_api_secret
@@ -148,6 +150,7 @@ pytest
 ```
 
 The test suite includes:
+
 - Unit tests for all components
 - Tests to ensure tweet text stays within 280 characters
 - Tests to verify scheduler respects the tweet limits (≤ 20 tweets/day)
@@ -207,4 +210,3 @@ hypexbt/
 ## License
 
 MIT
-
