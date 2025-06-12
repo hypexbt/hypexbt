@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 # import talib  # Commented out for testing
 
-from bot.utils.config import Config
+from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
 

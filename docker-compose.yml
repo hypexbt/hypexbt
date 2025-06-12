@@ -1,10 +1,10 @@
-version: '3'
+version: "3"
 
 services:
   scheduler:
     build: .
     env_file: .env
-    command: python -m bot.main --mode scheduler
+    command: python -m src.core.main --mode scheduler
     volumes:
       - ./:/app
     restart: unless-stopped
@@ -12,8 +12,17 @@ services:
   websocket:
     build: .
     env_file: .env
-    command: python -m bot.main --mode websocket
+    command: python -m src.core.main --mode websocket
     volumes:
       - ./:/app
     restart: unless-stopped
 
+  api:
+    build: .
+    env_file: .env
+    command: python -m src.core.main --mode api --host 0.0.0.0 --port 8000
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped

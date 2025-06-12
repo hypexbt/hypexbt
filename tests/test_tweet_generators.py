@@ -1,16 +1,16 @@
 """
-Tests for the tweet generators.
+Tests for tweet generator modules.
 """
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import Mock, patch
 
-from bot.tweet_generators.hyperliquid_news import HyperliquidNewsTweetGenerator
-from bot.tweet_generators.token_launch import TokenLaunchTweetGenerator
-from bot.tweet_generators.token_graduation import TokenGraduationTweetGenerator
-from bot.tweet_generators.trading_signal import TradingSignalTweetGenerator
-from bot.tweet_generators.daily_stats import DailyStatsTweetGenerator
-from bot.tweet_generators.token_fundamentals import TokenFundamentalsTweetGenerator
+from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
+from src.agent.token_launch import TokenLaunchTweetGenerator
+from src.agent.token_graduation import TokenGraduationTweetGenerator
+from src.agent.trading_signal import TradingSignalTweetGenerator
+from src.agent.daily_stats import DailyStatsTweetGenerator
+from src.agent.token_fundamentals import TokenFundamentalsTweetGenerator
 
 
 class TestTweetGenerators(unittest.TestCase):
@@ -19,10 +19,10 @@ class TestTweetGenerators(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         # Mock clients
-        self.mock_twitter_client = MagicMock()
-        self.mock_hyperliquid_client = MagicMock()
-        self.mock_liquidlaunch_client = MagicMock()
-        self.mock_coingecko_client = MagicMock()
+        self.mock_twitter_client = Mock()
+        self.mock_hyperliquid_client = Mock()
+        self.mock_liquidlaunch_client = Mock()
+        self.mock_coingecko_client = Mock()
 
         # Create generators
         self.hyperliquid_news_generator = HyperliquidNewsTweetGenerator(

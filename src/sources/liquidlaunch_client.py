@@ -1,22 +1,22 @@
 """
-LiquidLaunch client module for the hypexbt Twitter bot.
+LiquidLaunch API client module for the hypexbt Twitter bot.
 
-This module handles fetching token launch and graduation events from LiquidLaunch.
-Since there's no official API, it uses Twitter timeline and web scraping as data sources.
+This module handles interactions with LiquidLaunch APIs to fetch token launch
+and graduation data.
 """
 
 import logging
 import time
 import re
+import json
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
-import json
 
 import requests
 from bs4 import BeautifulSoup
 
-from bot.utils.config import Config
-from bot.twitter_client import TwitterClient
+from src.utils.config import Config
+from src.messaging.twitter_client import TwitterClient
 
 logger = logging.getLogger(__name__)
 

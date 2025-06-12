@@ -1,13 +1,13 @@
 """
-Tests for the scheduler module.
+Tests for the TweetScheduler module.
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
 
-from bot.scheduler import TweetScheduler
-from bot.utils.config import Config
+from src.core.scheduler import TweetScheduler
+from src.utils.config import Config
 
 
 class TestTweetScheduler(unittest.TestCase):
@@ -38,31 +38,31 @@ class TestTweetScheduler(unittest.TestCase):
         self.patches = []
 
         # Patch TwitterClient initialization
-        self.twitter_client_patcher = patch("bot.scheduler.TwitterClient")
+        self.twitter_client_patcher = patch("src.core.scheduler.TwitterClient")
         self.mock_twitter_client_class = self.twitter_client_patcher.start()
         self.mock_twitter_client = MagicMock()
         self.mock_twitter_client_class.return_value = self.mock_twitter_client
 
         # Patch HyperliquidClient initialization
-        self.hyperliquid_client_patcher = patch("bot.scheduler.HyperliquidClient")
+        self.hyperliquid_client_patcher = patch("src.core.scheduler.HyperliquidClient")
         self.mock_hyperliquid_client_class = self.hyperliquid_client_patcher.start()
         self.mock_hyperliquid_client = MagicMock()
         self.mock_hyperliquid_client_class.return_value = self.mock_hyperliquid_client
 
         # Patch LiquidLaunchClient initialization
-        self.liquidlaunch_client_patcher = patch("bot.scheduler.LiquidLaunchClient")
+        self.liquidlaunch_client_patcher = patch("src.core.scheduler.LiquidLaunchClient")
         self.mock_liquidlaunch_client_class = self.liquidlaunch_client_patcher.start()
         self.mock_liquidlaunch_client = MagicMock()
         self.mock_liquidlaunch_client_class.return_value = self.mock_liquidlaunch_client
 
         # Patch CoinGeckoClient initialization
-        self.coingecko_client_patcher = patch("bot.scheduler.CoinGeckoClient")
+        self.coingecko_client_patcher = patch("src.core.scheduler.CoinGeckoClient")
         self.mock_coingecko_client_class = self.coingecko_client_patcher.start()
         self.mock_coingecko_client = MagicMock()
         self.mock_coingecko_client_class.return_value = self.mock_coingecko_client
 
         # Patch SlackNotifier initialization
-        self.slack_notifier_patcher = patch("bot.scheduler.SlackNotifier")
+        self.slack_notifier_patcher = patch("src.core.scheduler.SlackNotifier")
         self.mock_slack_notifier_class = self.slack_notifier_patcher.start()
         self.mock_slack_notifier = MagicMock()
         self.mock_slack_notifier_class.return_value = self.mock_slack_notifier
@@ -76,7 +76,7 @@ class TestTweetScheduler(unittest.TestCase):
             "token_fundamentals",
         ]:
             patcher = patch(
-                f"bot.scheduler.{generator.split('_')[0].capitalize()}{generator.split('_')[1].capitalize()}TweetGenerator"
+                f"src.core.scheduler.{generator.split('_')[0].capitalize()}{generator.split('_')[1].capitalize()}TweetGenerator"
             )
             self.patches.append(patcher)
             setattr(self, f"mock_{generator}_generator_class", patcher.start())
@@ -86,7 +86,7 @@ class TestTweetScheduler(unittest.TestCase):
             )
 
         # Patch scheduler
-        self.scheduler_patcher = patch("bot.scheduler.BackgroundScheduler")
+        self.scheduler_patcher = patch("src.core.scheduler.BackgroundScheduler")
         self.mock_scheduler_class = self.scheduler_patcher.start()
         self.mock_scheduler = MagicMock()
         self.mock_scheduler_class.return_value = self.mock_scheduler

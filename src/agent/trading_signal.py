@@ -1,7 +1,7 @@
 """
 Trading signal tweet generator for the hypexbt Twitter bot.
 
-This module generates tweets about trading signals based on momentum indicators.
+This module generates tweets about trading signals and technical analysis.
 """
 
 import logging
@@ -9,7 +9,7 @@ import random
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
-from bot.data_sources.hyperliquid_client import HyperliquidClient
+from src.sources.hyperliquid_client import HyperliquidClient
 
 logger = logging.getLogger(__name__)
 

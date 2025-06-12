@@ -1,7 +1,7 @@
 """
 Token fundamentals tweet generator for the hypexbt Twitter bot.
 
-This module generates tweets about token fundamentals.
+This module generates tweets about token fundamental analysis.
 """
 
 import logging
@@ -9,8 +9,8 @@ import random
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
-from bot.data_sources.coingecko_client import CoinGeckoClient
-from bot.data_sources.hyperliquid_client import HyperliquidClient
+from src.sources.coingecko_client import CoinGeckoClient
+from src.sources.hyperliquid_client import HyperliquidClient
 
 logger = logging.getLogger(__name__)
 

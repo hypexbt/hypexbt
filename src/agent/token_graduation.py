@@ -1,7 +1,7 @@
 """
 Token graduation tweet generator for the hypexbt Twitter bot.
 
-This module generates tweets about token graduations/migrations on LiquidLaunch.
+This module generates tweets about token graduations and migrations.
 """
 
 import logging
@@ -9,7 +9,7 @@ import random
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
-from bot.data_sources.liquidlaunch_client import LiquidLaunchClient
+from src.sources.liquidlaunch_client import LiquidLaunchClient
 
 logger = logging.getLogger(__name__)
 

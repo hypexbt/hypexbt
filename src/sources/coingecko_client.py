@@ -1,17 +1,19 @@
 """
 CoinGecko API client module for the hypexbt Twitter bot.
 
-This module handles interactions with the CoinGecko API to fetch token fundamentals.
+This module handles interactions with the CoinGecko API to fetch token fundamental
+data including market cap, supply, and pricing information.
 """
 
 import logging
 import time
+import json
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
 
 import requests
 
-from bot.utils.config import Config
+from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
 

@@ -15,18 +15,17 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from bot.utils.config import Config
-from bot.utils.slack import SlackNotifier
-from bot.twitter_client import TwitterClient
-from bot.data_sources.hyperliquid_client import HyperliquidClient
-from bot.data_sources.liquidlaunch_client import LiquidLaunchClient
-from bot.data_sources.coingecko_client import CoinGeckoClient
-from bot.tweet_generators.hyperliquid_news import HyperliquidNewsTweetGenerator
-from bot.tweet_generators.token_launch import TokenLaunchTweetGenerator
-from bot.tweet_generators.token_graduation import TokenGraduationTweetGenerator
-from bot.tweet_generators.trading_signal import TradingSignalTweetGenerator
-from bot.tweet_generators.daily_stats import DailyStatsTweetGenerator
-from bot.tweet_generators.token_fundamentals import TokenFundamentalsTweetGenerator
+from src.utils.config import Config
+from src.messaging.twitter_client import TwitterClient
+from src.sources.hyperliquid_client import HyperliquidClient
+from src.sources.liquidlaunch_client import LiquidLaunchClient
+from src.sources.coingecko_client import CoinGeckoClient
+from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
+from src.agent.token_launch import TokenLaunchTweetGenerator
+from src.agent.token_graduation import TokenGraduationTweetGenerator
+from src.agent.trading_signal import TradingSignalTweetGenerator
+from src.agent.daily_stats import DailyStatsTweetGenerator
+from src.agent.token_fundamentals import TokenFundamentalsTweetGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,6 @@ class TweetScheduler:
         self.hyperliquid_client = HyperliquidClient(config)
         self.liquidlaunch_client = LiquidLaunchClient(config)
         self.coingecko_client = CoinGeckoClient(config)
-        self.slack_notifier = SlackNotifier(config)
 
         # Initialize tweet generators
         self.tweet_generators = {
@@ -125,9 +123,6 @@ class TweetScheduler:
             logger.error(
                 f"Failed to initialize tweet scheduler: {str(e)}", exc_info=True
             )
-            self.slack_notifier.send_error(
-                f"Failed to initialize tweet scheduler: {str(e)}"
-            )
             raise
 
     def start(self):
@@ -137,7 +132,6 @@ class TweetScheduler:
             logger.info("Tweet scheduler started")
         except Exception as e:
             logger.error(f"Failed to start tweet scheduler: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"Failed to start tweet scheduler: {str(e)}")
             raise
 
     def stop(self):
@@ -284,9 +278,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to generate tweet schedule: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(
-                f"Failed to generate tweet schedule: {str(e)}"
-            )
+            raise
 
     def _check_trading_signals(self):
         """Check for real-time trading signals."""
@@ -335,7 +327,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to check trading signals: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"Failed to check trading signals: {str(e)}")
+            raise
 
     def _check_token_events(self):
         """Check for new token launches and graduations."""
@@ -367,7 +359,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to check token events: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"Failed to check token events: {str(e)}")
+            raise
 
     def _process_tweet_queue(self):
         """Process the tweet queue."""
@@ -414,7 +406,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to process tweet queue: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"Failed to process tweet queue: {str(e)}")
+            raise
 
     def _post_tweet(self, tweet_data: Dict[str, Any]):
         """
@@ -466,7 +458,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to post tweet: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"Failed to post tweet: {str(e)}")
+            raise
 
     async def start_websocket_streaming(self):
         """Start WebSocket streaming for real-time data."""
@@ -476,7 +468,7 @@ class TweetScheduler:
             )
         except Exception as e:
             logger.error(f"WebSocket streaming error: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(f"WebSocket streaming error: {str(e)}")
+            raise
 
     def _handle_websocket_signal(self, signal_data: Dict[str, Any]):
         """
@@ -512,9 +504,7 @@ class TweetScheduler:
 
         except Exception as e:
             logger.error(f"Failed to handle WebSocket signal: {str(e)}", exc_info=True)
-            self.slack_notifier.send_error(
-                f"Failed to handle WebSocket signal: {str(e)}"
-            )
+            raise
 
     def _generate_signal_tweet_text(self, signal_data: Dict[str, Any]) -> str:
         """

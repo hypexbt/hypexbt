@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 import tweepy
 
-from bot.utils.config import Config
+from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
 

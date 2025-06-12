@@ -1,12 +1,12 @@
 """
-Tests for the Twitter client module.
+Tests for TwitterClient module.
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import Mock, patch
 
-from bot.twitter_client import TwitterClient
-from bot.utils.config import Config
+from src.messaging.twitter_client import TwitterClient
+from src.utils.config import Config
 
 
 class TestTwitterClient(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestTwitterClient(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         # Mock config
-        self.mock_config = MagicMock(spec=Config)
+        self.mock_config = Mock(spec=Config)
         self.mock_config.get_twitter_credentials.return_value = {
             "api_key": "test_api_key",
             "api_secret": "test_api_secret",
@@ -25,15 +25,15 @@ class TestTwitterClient(unittest.TestCase):
         }
 
         # Patch tweepy
-        self.tweepy_patcher = patch("bot.twitter_client.tweepy")
+        self.tweepy_patcher = patch("src.messaging.twitter_client.tweepy")
         self.mock_tweepy = self.tweepy_patcher.start()
 
         # Mock tweepy.Client
-        self.mock_client = MagicMock()
+        self.mock_client = Mock()
         self.mock_tweepy.Client.return_value = self.mock_client
 
         # Mock tweepy.API
-        self.mock_api = MagicMock()
+        self.mock_api = Mock()
         self.mock_tweepy.API.return_value = self.mock_api
 
         # Create client
@@ -60,7 +60,7 @@ class TestTwitterClient(unittest.TestCase):
     def test_post_tweet(self):
         """Test posting a tweet."""
         # Mock response
-        mock_response = MagicMock()
+        mock_response = Mock()
         mock_response.data = {"id": "123", "text": "Test tweet"}
         self.mock_client.create_tweet.return_value = mock_response
 
@@ -81,7 +81,7 @@ class TestTwitterClient(unittest.TestCase):
         long_tweet = "x" * 281
 
         # Mock response
-        mock_response = MagicMock()
+        mock_response = Mock()
         mock_response.data = {"id": "123", "text": long_tweet[:277] + "..."}
         self.mock_client.create_tweet.return_value = mock_response
 
@@ -96,7 +96,7 @@ class TestTwitterClient(unittest.TestCase):
     def test_retweet(self):
         """Test retweeting."""
         # Mock response
-        mock_response = MagicMock()
+        mock_response = Mock()
         mock_response.data = {"retweeted": True}
         self.mock_client.retweet.return_value = mock_response
 
@@ -112,7 +112,7 @@ class TestTwitterClient(unittest.TestCase):
     def test_quote_tweet(self):
         """Test quote tweeting."""
         # Mock response
-        mock_response = MagicMock()
+        mock_response = Mock()
         mock_response.data = {
             "id": "456",
             "text": "Quote tweet https://twitter.com/i/web/status/123",
@@ -136,23 +136,23 @@ class TestTwitterClient(unittest.TestCase):
     def test_get_user_timeline(self):
         """Test getting a user's timeline."""
         # Mock responses
-        mock_user = MagicMock()
+        mock_user = Mock()
         mock_user.data.id = "789"
         self.mock_client.get_user.return_value = mock_user
 
-        mock_tweet1 = MagicMock()
+        mock_tweet1 = Mock()
         mock_tweet1.id = "1"
         mock_tweet1.text = "Tweet 1"
         mock_tweet1.created_at = "2023-01-01T00:00:00Z"
         mock_tweet1.public_metrics = {"retweet_count": 5, "like_count": 10}
 
-        mock_tweet2 = MagicMock()
+        mock_tweet2 = Mock()
         mock_tweet2.id = "2"
         mock_tweet2.text = "Tweet 2"
         mock_tweet2.created_at = "2023-01-02T00:00:00Z"
         mock_tweet2.public_metrics = {"retweet_count": 3, "like_count": 7}
 
-        mock_tweets_response = MagicMock()
+        mock_tweets_response = Mock()
         mock_tweets_response.data = [mock_tweet1, mock_tweet2]
         self.mock_client.get_users_tweets.return_value = mock_tweets_response
 

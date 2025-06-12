@@ -8,7 +8,7 @@ import logging
 import random
 from typing import Dict, List, Any, Optional
 
-from bot.twitter_client import TwitterClient
+from src.messaging.twitter_client import TwitterClient
 
 logger = logging.getLogger(__name__)
 

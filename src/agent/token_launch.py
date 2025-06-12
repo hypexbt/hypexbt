@@ -1,7 +1,7 @@
 """
 Token launch tweet generator for the hypexbt Twitter bot.
 
-This module generates tweets about new token launches on LiquidLaunch.
+This module generates tweets about new token launches.
 """
 
 import logging
@@ -9,7 +9,7 @@ import random
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
-from bot.data_sources.liquidlaunch_client import LiquidLaunchClient
+from src.sources.liquidlaunch_client import LiquidLaunchClient
 
 logger = logging.getLogger(__name__)
 
