@@ -1,89 +1,171 @@
 # hypexbt Twitter Bot
 
-A Twitter bot that tweets 10-20 times per day about Hyperliquid exchange, token launches, trading signals, stats, and token fundamentals.
+A Twitter bot system that tweets 10-20 times per day about Hyperliquid exchange, token launches, trading signals, stats, and token fundamentals. Built as a modular monorepo with separate API and agent services.
+
+## Architecture Overview
+
+### Current System
+
+The project is structured as a monorepo with two main services:
+
+- **API Service**: FastAPI backend for webhooks and external integrations
+- **Agent Service**: Twitter bot with intelligent scheduling and content generation
+
+### Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        FE[Next.js Frontend<br/>Dashboard & Analytics]
+    end
+
+    subgraph "API Layer"
+        API[Python FastAPI<br/>REST API & Webhooks]
+        WS[WebSocket Server<br/>Real-time Updates]
+    end
+
+    subgraph "Agent Layer"
+        BOT[Twitter Bot Agent<br/>Content Generation]
+        SCHED[Scheduler<br/>Tweet Orchestration]
+        SIGNAL[Signal Processor<br/>Trading Alerts]
+    end
+
+    subgraph "Data Layer"
+        CRON[Data Ingestion<br/>Python Cron Jobs]
+        REDIS[(Redis Cache<br/>Sessions & Queue)]
+        PG[(PostgreSQL<br/>Persistent Data)]
+    end
+
+    subgraph "External APIs"
+        HL[Hyperliquid API<br/>Market Data]
+        CG[CoinGecko API<br/>Token Info]
+        TW[Twitter API<br/>Social Media]
+        LL[LiquidLaunch<br/>Token Events]
+    end
+
+    FE --> API
+    FE --> WS
+    API --> BOT
+    API --> REDIS
+    API --> PG
+    WS --> REDIS
+
+    BOT --> SCHED
+    BOT --> SIGNAL
+    SCHED --> REDIS
+    SIGNAL --> REDIS
+
+    CRON --> HL
+    CRON --> CG
+    CRON --> LL
+    CRON --> PG
+    CRON --> REDIS
+
+    BOT --> TW
+    API --> TW
+
+    classDef frontend fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef agent fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef data fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class FE frontend
+    class API,WS api
+    class BOT,SCHED,SIGNAL agent
+    class CRON,REDIS,PG data
+    class HL,CG,TW,LL external
+```
 
 ## Features
 
-- Retweets and quote-tweets from @HyperliquidExch / @HyperliquidLabs
-- Fresh Token Launch announcements from LiquidLaunch
-- Token Graduations/Migrations from LiquidLaunch
-- Auto-generated perp trading signals (15-min & 1-h momentum crosses)
-- Daily Hyperliquid stats (24h volume, OI, top gainer/loser)
-- Short token fundamental snapshots (circ supply, FDV, major backers)
+- **Intelligent Content Generation**: 6 different tweet types with configurable distribution
+- **Real-time Monitoring**: WebSocket connections for live trading signals
+- **Smart Scheduling**: Respects rate limits and optimal posting times
+- **Multi-source Integration**: Hyperliquid, CoinGecko, LiquidLaunch APIs
+- **Monitoring & Alerts**: Slack notifications for errors and performance
+- **Modular Architecture**: Separate services for API and bot functionality
 
-## Content Distribution
+### Content Types
 
-- 15% → RT or quote-tweet @HyperliquidExch / @HyperliquidLabs news & memes
-- 20% → "Fresh Token Launch" blurbs (LiquidLaunch GitBook feed & @LiquidLaunchHL timeline)
-- 20% → "Token Graduations/Migrations" (LiquidLaunch events)
+- 15% → Retweets and quote-tweets from @HyperliquidExch / @HyperliquidLabs
+- 20% → Fresh Token Launch announcements from LiquidLaunch
+- 20% → Token Graduations/Migrations from LiquidLaunch
 - 15% → Auto-generated perp trading signals (15-min & 1-h momentum crosses)
 - 15% → Daily Hyperliquid stats (24h volume, OI, top gainer/loser)
-- 15% → Short token fundamental snapshots (circ supply, FDV, major backers)
+- 15% → Token fundamental snapshots (circ supply, FDV, major backers)
+
+## Project Structure
+
+```
+hypexbt/
+├── api/                         # FastAPI backend service
+│   ├── main.py                  # API server with health/echo endpoints
+│   ├── pyproject.toml           # API dependencies
+│   └── .tool-versions           # Python version
+├── agent/                       # Twitter bot service
+│   ├── src/                     # Agent source code
+│   │   ├── agent/               # Bot logic and scheduling
+│   │   ├── api/                 # API clients
+│   │   ├── core/                # Core functionality
+│   │   ├── messaging/           # Tweet generation
+│   │   ├── sources/             # Data source integrations
+│   │   └── utils/               # Utility functions
+│   ├── pyproject.toml           # Agent dependencies
+│   └── .tool-versions           # Python version
+├── docker/                      # Docker configurations
+│   ├── Dockerfile.api           # API service container
+│   ├── Dockerfile.agent         # Agent service container
+│   └── docker-compose.yml       # Local development setup
+├── docs/                        # Documentation
+│   ├── api.md                   # API documentation
+│   ├── arch.md                  # Architecture details
+│   └── monorepo.md              # Monorepo strategy
+├── tests/                       # Test suite
+├── Makefile                     # Development commands
+├── pyproject.toml               # Root project configuration
+└── README.md                    # This file
+```
 
 ## Requirements
 
 - Python 3.13+
 - Twitter API credentials
 - Hyperliquid API access
-- CoinGecko API access
+- CoinGecko API access (optional)
+- Docker (for containerized deployment)
 
-## Installation
+## Quick Start
 
 ### Local Development
 
-1. Clone this repository
-2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for package management
-3. Install dependencies: `uv sync`
-4. Copy `.env.example` to `.env` and fill in your API credentials
-5. Run the bot: `uv run python -m bot.main`
-
-### Alternative: Traditional pip
-
-If you prefer using pip:
-
-1. Clone this repository
-2. Create a virtual environment: `python -m venv venv`
-3. Activate it: `source venv/bin/activate` (Linux/Mac) or `venv\Scripts\activate` (Windows)
-4. Install dependencies: `pip install -e .`
-5. Copy `.env.example` to `.env` and fill in your API credentials
-6. Run the bot: `python -m bot.main`
-
-## Development Tools
-
-This project uses modern Python tooling:
-
-- **uv**: Fast Python package manager for dependency management
-- **ruff**: Lightning-fast linter and code formatter (replaces black + flake8)
-
-### Linting and Formatting
-
 ```bash
-# Check code with ruff
-uv run ruff check .
+# Clone the repository
+git clone https://github.com/your-org/hypexbt.git
+cd hypexbt
 
-# Format code with ruff
-uv run ruff format .
+# Install uv (recommended package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Fix auto-fixable issues
-uv run ruff check --fix .
+# Install dependencies
+uv sync
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API credentials
+
+# Run the API service
+make dev-api
+
+# Run the agent service (in another terminal)
+cd agent
+uv run python -m src.main
 ```
 
-### Adding Dependencies
+### Docker Development
 
 ```bash
-# Add a new dependency
-uv add package-name
-
-# Add a development dependency
-uv add --dev package-name
-```
-
-## Local Development
-
-You can use Docker Compose for local development:
-
-```bash
-# Build and start the services
+# Build and run all services
 docker-compose up -d
 
 # View logs
@@ -93,67 +175,36 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## Deployment
+## Deployment on Railway
 
-### One-Click Deploy to Render.com
-
-1. Fork this repository to your GitHub account
-2. Sign up for [Render.com](https://render.com) if you haven't already
-3. Click the button below to deploy to Render:
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-
-4. Configure the following services:
-
-#### Scheduler Service (Cron Job)
-
-- **Name**: `hypexbt-scheduler`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `./Dockerfile`
-- **Command**: `python -m bot.main --mode scheduler`
-- **Schedule**: `0 * * * *` (Runs every hour)
-- **Environment Variables**: Add all variables from `.env.example`
-
-#### WebSocket Service (Web Service)
-
-- **Name**: `hypexbt-websocket`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `./Dockerfile`
-- **Command**: `python -m bot.main --mode websocket`
-- **Environment Variables**: Add all variables from `.env.example`
-
-### Deploy to Railway
+### 1. Fork and Connect Repository
 
 1. Fork this repository to your GitHub account
 2. Sign up for [Railway](https://railway.app) if you haven't already
-3. Create a new project from GitHub repo
-4. Add your repository
-5. Configure the following services:
+3. Create a new project and connect your GitHub repository
 
-#### Scheduler Service
+### 2. Deploy API Service
 
-- **Name**: `hypexbt-scheduler`
-- **Dockerfile Path**: `./Dockerfile`
-- **Command Override**: `python -m bot.main --mode scheduler`
-- **Environment Variables**: Add all variables from `.env.example`
-- **Add a Cron Job**: Set to run every hour
+1. Create a new service in Railway
+2. **Name**: `hypexbt-api`
+3. **Root Directory**: `api`
+4. **Build Command**: `pip install -e .`
+5. **Start Command**: `python main.py`
+6. **Port**: `8000`
 
-#### WebSocket Service
+### 3. Deploy Agent Service
 
-- **Name**: `hypexbt-websocket`
-- **Dockerfile Path**: `./Dockerfile`
-- **Command Override**: `python -m bot.main --mode websocket`
-- **Environment Variables**: Add all variables from `.env.example`
+1. Create another service in Railway
+2. **Name**: `hypexbt-agent`
+3. **Root Directory**: `agent`
+4. **Build Command**: `pip install -e .`
+5. **Start Command**: `python -m src.main`
 
-6. Deploy the services
+### 4. Configure Environment Variables
 
-## Environment Variables
+Add these environment variables to both services:
 
-Create a `.env` file with the following variables:
-
-```
-
-
+```bash
 # Twitter API credentials
 X_API_KEY=your_api_key
 X_API_SECRET=your_api_secret
@@ -165,96 +216,81 @@ X_ACCESS_TOKEN_SECRET=your_access_token_secret
 HL_API_URL=https://api.hyperliquid.xyz
 COINGECKO_API=https://api.coingecko.com/api/v3
 
-# Slack webhook for error reporting (optional)
+# Optional: Slack webhook for error reporting
 SLACK_WEBHOOK=your_slack_webhook_url
 
-# Tweet scheduling configuration (optional)
+# Optional: Tweet scheduling configuration
 MIN_TWEETS_PER_DAY=10
 MAX_TWEETS_PER_DAY=20
 MIN_INTERVAL_MINUTES=30
 MAX_INTERVAL_MINUTES=180
-ACTIVE_HOURS_START=0
-ACTIVE_HOURS_END=23
-
-# Tweet content distribution (optional)
-HYPERLIQUID_NEWS_PCT=15
-TOKEN_LAUNCHES_PCT=20
-TOKEN_GRADUATIONS_PCT=20
-TRADING_SIGNALS_PCT=15
-DAILY_STATS_PCT=15
-TOKEN_FUNDAMENTALS_PCT=15
 ```
 
-## Testing
+### 5. Database Setup (Future)
 
-Run tests with pytest:
+For the future architecture with PostgreSQL:
+
+1. Add a PostgreSQL database service in Railway
+2. Connect it to both API and agent services
+3. Update environment variables with database credentials
+
+## Development Tools
+
+This project uses modern Python tooling:
+
+- **uv**: Fast Python package manager
+- **ruff**: Lightning-fast linter and formatter
+- **Docker**: Containerization for consistent environments
+- **pytest**: Testing framework
+
+### Common Commands
 
 ```bash
-# Using uv
+# Lint and format code
+uv run ruff check .
+uv run ruff format .
+
+# Run tests
 uv run pytest
 
-# Using pip
-pytest
+# Build API service
+make build-api
+
+# Test API endpoints
+make test-api
+
+# See all available commands
+make help
 ```
 
-The test suite includes:
+## API Documentation
 
-- Unit tests for all components
-- Tests to ensure tweet text stays within 280 characters
-- Tests to verify scheduler respects the tweet limits (≤ 20 tweets/day)
-- Mocked Hyperliquid endpoints for testing
+The API service provides:
 
-## Project Structure
+- `GET /` - Welcome message with system info
+- `GET /health` - Health check endpoint
+- `GET /api/echo/{message}` - Echo endpoint for testing
 
-```
-hypexbt/
-├── bot/
-│   ├── __init__.py
-│   ├── main.py                  # Main entry point
-│   ├── scheduler.py             # Tweet scheduler
-│   ├── twitter_client.py        # Twitter API client
-│   ├── data_sources/            # Data source clients
-│   │   ├── __init__.py
-│   │   ├── hyperliquid_client.py
-│   │   ├── liquidlaunch_client.py
-│   │   └── coingecko_client.py
-│   ├── tweet_generators/        # Tweet content generators
-│   │   ├── __init__.py
-│   │   ├── hyperliquid_news.py
-│   │   ├── token_launch.py
-│   │   ├── token_graduation.py
-│   │   ├── trading_signal.py
-│   │   ├── daily_stats.py
-│   │   └── token_fundamentals.py
-│   └── utils/                   # Utility modules
-│       ├── __init__.py
-│       ├── config.py
-│       ├── logging_setup.py
-│       └── slack.py
-├── tests/                       # Test suite
-│   ├── __init__.py
-│   ├── test_twitter_client.py
-│   ├── test_scheduler.py
-│   └── test_tweet_generators.py
-├── .env.example                 # Example environment variables
-├── Dockerfile                   # Docker configuration
-├── docker-compose.yml           # Docker Compose configuration
-├── requirements.txt             # Python dependencies
-└── README.md                    # This file
-```
+See [docs/api.md](docs/api.md) for detailed API documentation.
 
-## Deployment Checklist
+## Architecture Details
 
-1. [ ] Set up Twitter Developer account and create a project
-2. [ ] Generate Twitter API credentials (API key, API secret, Bearer token, Access token, Access token secret)
-3. [ ] Create a Slack webhook for error notifications (optional)
-4. [ ] Fork the repository to your GitHub account
-5. [ ] Deploy to Render.com or Railway following the instructions above
-6. [ ] Configure environment variables
-7. [ ] Verify that both services (scheduler and websocket) are running
-8. [ ] Monitor the logs to ensure tweets are being generated and posted
-9. [ ] Set up monitoring alerts (optional)
+For detailed technical documentation:
+
+- [Architecture Overview](docs/arch.md) - System design and data flow
+- [Monorepo Strategy](docs/monorepo.md) - Project structure and development workflow
+- [API Documentation](docs/api.md) - API endpoints and usage
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and add tests
+4. Run linting and tests: `make test`
+5. Commit your changes: `git commit -am 'Add feature'`
+6. Push to the branch: `git push origin feature-name`
+7. Create a Pull Request
 
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) file for details.
