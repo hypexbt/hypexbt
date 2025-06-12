@@ -22,17 +22,61 @@ A Twitter bot that tweets 10-20 times per day about Hyperliquid exchange, token 
 
 ## Requirements
 
-- Python 3.12
+- Python 3.13+
 - Twitter API credentials
 - Hyperliquid API access
 - CoinGecko API access
 
 ## Installation
 
+### Local Development
+
 1. Clone this repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Copy `.env.example` to `.env` and fill in your API credentials
-4. Run the bot: `python -m bot.main`
+2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for package management
+3. Install dependencies: `uv sync`
+4. Copy `.env.example` to `.env` and fill in your API credentials
+5. Run the bot: `uv run python -m bot.main`
+
+### Alternative: Traditional pip
+
+If you prefer using pip:
+
+1. Clone this repository
+2. Create a virtual environment: `python -m venv venv`
+3. Activate it: `source venv/bin/activate` (Linux/Mac) or `venv\Scripts\activate` (Windows)
+4. Install dependencies: `pip install -e .`
+5. Copy `.env.example` to `.env` and fill in your API credentials
+6. Run the bot: `python -m bot.main`
+
+## Development Tools
+
+This project uses modern Python tooling:
+
+- **uv**: Fast Python package manager for dependency management
+- **ruff**: Lightning-fast linter and code formatter (replaces black + flake8)
+
+### Linting and Formatting
+
+```bash
+# Check code with ruff
+uv run ruff check .
+
+# Format code with ruff
+uv run ruff format .
+
+# Fix auto-fixable issues
+uv run ruff check --fix .
+```
+
+### Adding Dependencies
+
+```bash
+# Add a new dependency
+uv add package-name
+
+# Add a development dependency
+uv add --dev package-name
+```
 
 ## Local Development
 
@@ -146,6 +190,10 @@ TOKEN_FUNDAMENTALS_PCT=15
 Run tests with pytest:
 
 ```bash
+# Using uv
+uv run pytest
+
+# Using pip
 pytest
 ```
 

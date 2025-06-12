@@ -12,7 +12,7 @@ hypexbt/
 │   ├── src/
 │   ├── pyproject.toml
 │   └── .tool-versions
-├── build/               # Docker configs
+├── docker/              # Docker configs
 │   └── Dockerfile.api
 ├── Makefile             # Development commands
 └── docs/                # Documentation
@@ -30,7 +30,7 @@ hypexbt/
 - `pyproject.toml` - Dependencies per service
 - `.tool-versions` - Python version per service
 - `Makefile` - Build/run/test commands
-- `build/` - Docker configurations
+- `docker/` - Docker configurations
 
 ## Development Workflow
 
@@ -49,6 +49,6 @@ make help
 
 1. Create new directory (e.g., `frontend/`)
 2. Add `pyproject.toml` and `.tool-versions`
-3. Create `build/Dockerfile.{service}`
+3. Create `docker/Dockerfile.{service}`
 4. Add Makefile targets
 5. Update this documentation

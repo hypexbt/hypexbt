@@ -62,7 +62,7 @@ python main.py
 
 ```bash
 # Manual build
-docker build -f build/Dockerfile.api -t hypexbt-api .
+docker build -f docker/Dockerfile.api -t hypexbt-api .
 docker run -p 8000:8000 hypexbt-api
 
 # Or use Makefile

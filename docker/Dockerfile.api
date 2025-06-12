@@ -1,0 +1,19 @@
+FROM python:3.13-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies directly
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# Copy API files
+COPY api/ /app/api/
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Expose port
+EXPOSE 8000
+
+# Command to run the API server
+CMD ["python", "api/main.py"] 
