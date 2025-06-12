@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hypexbt-agent"
+version = "0.1.0"
+description = "A Twitter bot that tweets about Hyperliquid exchange, token launches, trading signals, and stats"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+authors = [
+    { name = "HypeXBT" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "numpy>=1.23.5",
+    "ta-lib>=0.4.24",
+    "tweepy>=4.14.0",
+    "APScheduler>=3.10.4",
+    "requests>=2.31.0",
+    "websockets>=12.0",
+    "pandas>=1.5.3",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-mock>=3.12.0",
+    "ruff>=0.1.0",
+] 
