@@ -1,0 +1,114 @@
+# Cursor Rules for hypexbt
+
+## Core Philosophy
+- **Outcomes over everything** - Focus on working solutions that deliver value
+- **Simplicity is key** - Choose the simplest solution that works
+- **Feel free to disagree** - Challenge assumptions and suggest better approaches
+- **Only comment confusing things** - Code should be self-documenting; comments explain "why" not "what"
+
+## Python Style & Standards
+- Follow **idiomatic Python** practices and PEP 8
+- Use **type hints** for function signatures and complex variables
+- Prefer **f-strings** over .format() or % formatting
+- Use **pathlib** instead of os.path for file operations
+- Favor **comprehensions** over map/filter when readable
+- Use **dataclasses** or **Pydantic models** for structured data
+- Prefer **context managers** (with statements) for resource management
+
+## Code Organization
+- **Flat is better than nested** - avoid deep directory structures
+- **Single responsibility** - functions and classes should do one thing well
+- **Fail fast** - validate inputs early and raise meaningful exceptions
+- **No magic numbers** - use constants or configuration
+- **DRY but not at the expense of clarity** - some repetition is ok if it's clearer
+
+## Dependencies & Libraries
+- **Prefer standard library** when possible
+- **uv** for package management (not pip)
+- **ruff** for linting and formatting (already configured)
+- **pytest** for testing
+- **FastAPI** for APIs (already in use)
+- **Pydantic** for data validation
+- **httpx** over requests for async HTTP clients
+
+## Error Handling
+- **Be explicit about error types** - catch specific exceptions
+- **Log errors with context** - include relevant data for debugging
+- **Fail gracefully** - handle expected failures without crashing
+- **Use structured logging** - JSON format for production
+
+## Testing
+- **Test behavior, not implementation** - focus on outcomes
+- **Arrange-Act-Assert** pattern for test structure
+- **Mock external dependencies** - don't hit real APIs in tests
+- **Property-based testing** for complex logic when appropriate
+
+## API Design
+- **RESTful conventions** when building HTTP APIs
+- **Clear error responses** with helpful messages
+- **Version your APIs** from the start
+- **Validate inputs** at the boundary
+- **Document with OpenAPI/Swagger** (FastAPI does this automatically)
+
+## Async Programming
+- **Use asyncio** for I/O bound operations
+- **httpx** for async HTTP requests
+- **aiofiles** for async file operations
+- **Be careful with sync/async boundaries** - don't block the event loop
+
+## Configuration
+- **Environment variables** for secrets and deployment config
+- **Configuration classes** using Pydantic for validation
+- **Sensible defaults** where possible
+- **Fail fast on missing required config**
+
+## Database & Data
+- **Use SQLAlchemy** for database ORM when needed
+- **Alembic** for database migrations
+- **Connection pooling** for production
+- **Transactions** for data consistency
+
+## Monitoring & Observability
+- **Structured logging** with consistent format
+- **Health check endpoints** for all services
+- **Metrics collection** for key business events
+- **Error tracking** with context
+
+## Security
+- **Never commit secrets** - use environment variables
+- **Validate all inputs** - especially from external sources
+- **Use HTTPS** in production
+- **Rate limiting** for public APIs
+
+## Performance
+- **Profile before optimizing** - measure don't guess
+- **Cache expensive operations** when appropriate
+- **Use connection pooling** for databases
+- **Async for I/O bound, threads for CPU bound**
+
+## Code Review Guidelines
+- **Focus on correctness and clarity** over style
+- **Suggest improvements** rather than just pointing out issues
+- **Consider maintainability** - will this be easy to change later?
+- **Security implications** - does this introduce vulnerabilities?
+
+## Git Practices
+- **Descriptive commit messages** - explain the "why"
+- **Small, focused commits** - easier to review and revert
+- **Branch naming**: `feature/description`, `fix/description`, `refactor/description`
+- **Squash and merge** for feature branches
+
+## Documentation
+- **README first** - keep it current and useful
+- **Docstrings for public APIs** - follow numpy/google style
+- **Architecture decisions** - document significant choices
+- **API documentation** - OpenAPI/Swagger for HTTP APIs
+
+## Disagreement Protocol
+When you disagree with these rules or my approach:
+1. **Explain your reasoning** - what's the benefit of your approach?
+2. **Provide alternatives** - show don't just tell
+3. **Consider trade-offs** - what are we giving up?
+4. **Be specific** - vague suggestions aren't helpful
+
+Remember: These are guidelines, not laws. The goal is shipping great software that works reliably and is maintainable. If breaking a rule serves that goal better, let's discuss it. 
