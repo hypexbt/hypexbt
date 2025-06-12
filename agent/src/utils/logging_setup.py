@@ -4,12 +4,11 @@ Logging setup module for the hypexbt Twitter bot.
 This module configures structured logging for the application.
 """
 
+import json
 import logging
 import logging.handlers
 import sys
-import json
 from datetime import datetime
-from typing import Optional
 
 
 class JSONFormatter(logging.Formatter):
@@ -26,7 +25,7 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
-            "line": record.lineno
+            "line": record.lineno,
         }
 
         if record.exc_info:
@@ -35,7 +34,7 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_entry)
 
 
-def setup_logging(log_level: str = "INFO", log_file: Optional[str] = None):
+def setup_logging(log_level: str = "INFO", log_file: str | None = None):
     """
     Set up logging configuration.
 
@@ -63,7 +62,7 @@ def setup_logging(log_level: str = "INFO", log_file: Optional[str] = None):
     # File handler if specified
     if log_file:
         file_handler = logging.handlers.RotatingFileHandler(
-            log_file, maxBytes=10*1024*1024, backupCount=5
+            log_file, maxBytes=10 * 1024 * 1024, backupCount=5
         )
         file_handler.setLevel(numeric_level)
         file_handler.setFormatter(JSONFormatter())
@@ -75,4 +74,4 @@ def setup_logging(log_level: str = "INFO", log_file: Optional[str] = None):
     logging.getLogger("tweepy").setLevel(logging.WARNING)
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
-    logging.info(f"Logging configured with level: {log_level}") 
+    logging.info(f"Logging configured with level: {log_level}")

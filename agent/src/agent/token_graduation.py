@@ -6,8 +6,7 @@ This module generates tweets about token graduations and migrations.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
+from typing import Any
 
 from src.sources.liquidlaunch_client import LiquidLaunchClient
 
@@ -31,7 +30,7 @@ class TokenGraduationTweetGenerator:
         # Keep track of tweeted graduations to avoid duplicates
         self.tweeted_graduations = set()
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about a token graduation/migration.
 
@@ -87,6 +86,6 @@ class TokenGraduationTweetGenerator:
 
         except Exception as e:
             logger.error(
-                f"Failed to generate token graduation tweet: {str(e)}", exc_info=True
+                f"Failed to generate token graduation tweet: {e!s}", exc_info=True
             )
             return {"success": False, "error": str(e)}

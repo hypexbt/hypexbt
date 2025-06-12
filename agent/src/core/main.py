@@ -5,16 +5,15 @@ hypexbt Twitter Bot
 A Twitter bot that tweets about Hyperliquid news, token launches, trading signals,
 daily stats, and token fundamentals.
 """
-import os
-import sys
-import logging
+
 import argparse
 import asyncio
-from pathlib import Path
+import logging
+import sys
 
+from src.core.scheduler import TweetScheduler
 from src.utils.config import Config
 from src.utils.logging_setup import setup_logging
-from src.core.scheduler import TweetScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +37,12 @@ def parse_args():
         choices=["scheduler", "websocket", "api"],
         help="Bot mode",
     )
-    parser.add_argument("--host", type=str, default="0.0.0.0", help="API host (for api mode)")
-    parser.add_argument("--port", type=int, default=8000, help="API port (for api mode)")
+    parser.add_argument(
+        "--host", type=str, default="0.0.0.0", help="API host (for api mode)"
+    )
+    parser.add_argument(
+        "--port", type=int, default=8000, help="API port (for api mode)"
+    )
 
     return parser.parse_args()
 
@@ -79,14 +82,17 @@ def run_scheduler_mode(config):
 def run_api_mode(host: str, port: int):
     """Run the bot in API mode."""
     logger.info(f"Starting API server on {host}:{port}")
-    
+
     try:
         import uvicorn
+
         from src.api.main import app
-        
+
         uvicorn.run(app, host=host, port=port)
     except ImportError:
-        logger.error("FastAPI/uvicorn not installed. Install with: pip install fastapi uvicorn")
+        logger.error(
+            "FastAPI/uvicorn not installed. Install with: pip install fastapi uvicorn"
+        )
         sys.exit(1)
 
 

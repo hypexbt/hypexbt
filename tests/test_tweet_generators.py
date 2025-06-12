@@ -3,14 +3,14 @@ Tests for tweet generator modules.
 """
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
-from src.agent.token_launch import TokenLaunchTweetGenerator
-from src.agent.token_graduation import TokenGraduationTweetGenerator
-from src.agent.trading_signal import TradingSignalTweetGenerator
 from src.agent.daily_stats import DailyStatsTweetGenerator
+from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
 from src.agent.token_fundamentals import TokenFundamentalsTweetGenerator
+from src.agent.token_graduation import TokenGraduationTweetGenerator
+from src.agent.token_launch import TokenLaunchTweetGenerator
+from src.agent.trading_signal import TradingSignalTweetGenerator
 
 
 class TestTweetGenerators(unittest.TestCase):

@@ -6,8 +6,8 @@ This module generates tweets about trading signals and technical analysis.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
+from typing import Any
 
 from src.sources.hyperliquid_client import HyperliquidClient
 
@@ -45,7 +45,7 @@ class TradingSignalTweetGenerator:
             "AAVE",
         ]
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about a trading signal.
 
@@ -171,6 +171,6 @@ class TradingSignalTweetGenerator:
 
         except Exception as e:
             logger.error(
-                f"Failed to generate trading signal tweet: {str(e)}", exc_info=True
+                f"Failed to generate trading signal tweet: {e!s}", exc_info=True
             )
             return {"success": False, "error": str(e)}

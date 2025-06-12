@@ -4,9 +4,9 @@ Configuration module for the hypexbt Twitter bot.
 This module handles loading and managing configuration from environment variables.
 """
 
-import os
 import logging
-from typing import Dict, Any
+import os
+
 from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
@@ -36,38 +36,38 @@ class Config:
         """Validate that required configuration is present."""
         required_vars = [
             "X_API_KEY",
-            "X_API_SECRET", 
+            "X_API_SECRET",
             "X_BEARER_TOKEN",
             "X_ACCESS_TOKEN",
-            "X_ACCESS_TOKEN_SECRET"
+            "X_ACCESS_TOKEN_SECRET",
         ]
-        
+
         missing_vars = []
         for var in required_vars:
             if not os.getenv(var):
                 missing_vars.append(var)
-        
+
         if missing_vars:
             logger.warning(f"Missing required environment variables: {missing_vars}")
 
-    def get_twitter_credentials(self) -> Dict[str, str]:
+    def get_twitter_credentials(self) -> dict[str, str]:
         """Get Twitter API credentials."""
         return {
             "api_key": os.getenv("X_API_KEY", ""),
             "api_secret": os.getenv("X_API_SECRET", ""),
             "bearer_token": os.getenv("X_BEARER_TOKEN", ""),
             "access_token": os.getenv("X_ACCESS_TOKEN", ""),
-            "access_token_secret": os.getenv("X_ACCESS_TOKEN_SECRET", "")
+            "access_token_secret": os.getenv("X_ACCESS_TOKEN_SECRET", ""),
         }
 
-    def get_api_endpoints(self) -> Dict[str, str]:
+    def get_api_endpoints(self) -> dict[str, str]:
         """Get API endpoint configurations."""
         return {
             "hyperliquid": os.getenv("HL_API_URL", "https://api.hyperliquid.xyz"),
-            "coingecko": os.getenv("COINGECKO_API", "https://api.coingecko.com/api/v3")
+            "coingecko": os.getenv("COINGECKO_API", "https://api.coingecko.com/api/v3"),
         }
 
-    def get_tweet_schedule(self) -> Dict[str, int]:
+    def get_tweet_schedule(self) -> dict[str, int]:
         """Get tweet scheduling configuration."""
         return {
             "min_tweets_per_day": int(os.getenv("MIN_TWEETS_PER_DAY", "10")),
@@ -75,10 +75,10 @@ class Config:
             "min_interval_minutes": int(os.getenv("MIN_INTERVAL_MINUTES", "30")),
             "max_interval_minutes": int(os.getenv("MAX_INTERVAL_MINUTES", "180")),
             "active_hours_start": int(os.getenv("ACTIVE_HOURS_START", "0")),
-            "active_hours_end": int(os.getenv("ACTIVE_HOURS_END", "23"))
+            "active_hours_end": int(os.getenv("ACTIVE_HOURS_END", "23")),
         }
 
-    def get_content_distribution(self) -> Dict[str, int]:
+    def get_content_distribution(self) -> dict[str, int]:
         """Get content distribution percentages."""
         return {
             "hyperliquid_news": int(os.getenv("HYPERLIQUID_NEWS_PCT", "15")),
@@ -86,5 +86,5 @@ class Config:
             "token_graduations": int(os.getenv("TOKEN_GRADUATIONS_PCT", "20")),
             "trading_signals": int(os.getenv("TRADING_SIGNALS_PCT", "15")),
             "daily_stats": int(os.getenv("DAILY_STATS_PCT", "15")),
-            "token_fundamentals": int(os.getenv("TOKEN_FUNDAMENTALS_PCT", "15"))
-        } 
+            "token_fundamentals": int(os.getenv("TOKEN_FUNDAMENTALS_PCT", "15")),
+        }

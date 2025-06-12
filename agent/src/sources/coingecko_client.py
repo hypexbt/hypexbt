@@ -7,9 +7,8 @@ data including market cap, supply, and pricing information.
 
 import logging
 import time
-import json
-from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
+from typing import Any
 
 import requests
 
@@ -57,14 +56,12 @@ class CoinGeckoClient:
             logger.info("CoinGecko client initialized successfully")
 
         except Exception as e:
-            logger.error(
-                f"Failed to initialize CoinGecko client: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to initialize CoinGecko client: {e!s}", exc_info=True)
             raise
 
     def _make_request(
-        self, endpoint: str, params: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, endpoint: str, params: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """
         Make a request to the CoinGecko API with rate limiting.
 
@@ -98,10 +95,10 @@ class CoinGeckoClient:
             return response.json()
 
         except Exception as e:
-            logger.error(f"API request failed: {str(e)}", exc_info=True)
+            logger.error(f"API request failed: {e!s}", exc_info=True)
             raise
 
-    def get_coin_list(self, force_refresh: bool = False) -> List[Dict[str, Any]]:
+    def get_coin_list(self, force_refresh: bool = False) -> list[dict[str, Any]]:
         """
         Get the list of all coins from CoinGecko.
 
@@ -132,13 +129,13 @@ class CoinGeckoClient:
             return response
 
         except Exception as e:
-            logger.error(f"Failed to fetch coin list: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch coin list: {e!s}", exc_info=True)
             if self.coin_list is not None:
                 logger.info("Using cached coin list")
                 return self.coin_list
             raise
 
-    def search_coin_id(self, symbol: str) -> Optional[str]:
+    def search_coin_id(self, symbol: str) -> str | None:
         """
         Search for a coin ID by symbol.
 
@@ -165,12 +162,12 @@ class CoinGeckoClient:
             return None
 
         except Exception as e:
-            logger.error(f"Failed to search for coin ID: {str(e)}", exc_info=True)
+            logger.error(f"Failed to search for coin ID: {e!s}", exc_info=True)
             return None
 
     def get_coin_data(
         self, coin_id: str, force_refresh: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get detailed data for a specific coin.
 
@@ -215,14 +212,14 @@ class CoinGeckoClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to fetch coin data for {coin_id}: {str(e)}", exc_info=True
+                f"Failed to fetch coin data for {coin_id}: {e!s}", exc_info=True
             )
             if coin_id in self.coin_data_cache:
                 logger.info(f"Using cached data for coin {coin_id}")
                 return self.coin_data_cache[coin_id]
             raise
 
-    def get_token_fundamentals(self, symbol: str) -> Dict[str, Any]:
+    def get_token_fundamentals(self, symbol: str) -> dict[str, Any]:
         """
         Get token fundamentals by symbol.
 
@@ -290,7 +287,7 @@ class CoinGeckoClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to fetch token fundamentals for {symbol}: {str(e)}",
+                f"Failed to fetch token fundamentals for {symbol}: {e!s}",
                 exc_info=True,
             )
             return {}

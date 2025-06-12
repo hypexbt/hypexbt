@@ -6,17 +6,12 @@ and graduation data.
 """
 
 import logging
-import time
 import re
-import json
-from typing import Dict, List, Any, Optional, Union
 from datetime import datetime, timedelta
+from typing import Any
 
-import requests
-from bs4 import BeautifulSoup
-
-from src.utils.config import Config
 from src.messaging.twitter_client import TwitterClient
+from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +54,11 @@ class LiquidLaunchClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to initialize LiquidLaunch client: {str(e)}", exc_info=True
+                f"Failed to initialize LiquidLaunch client: {e!s}", exc_info=True
             )
             # Don't raise, as this is not critical
 
-    def get_token_launches(self, force_refresh: bool = False) -> List[Dict[str, Any]]:
+    def get_token_launches(self, force_refresh: bool = False) -> list[dict[str, Any]]:
         """
         Get recent token launches.
 
@@ -137,7 +132,7 @@ class LiquidLaunchClient:
             return launches
 
         except Exception as e:
-            logger.error(f"Failed to fetch token launches: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch token launches: {e!s}", exc_info=True)
             if self.token_launches_cache:
                 logger.info("Using cached token launches")
                 return self.token_launches_cache
@@ -145,7 +140,7 @@ class LiquidLaunchClient:
 
     def get_token_graduations(
         self, force_refresh: bool = False
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get recent token graduations/migrations.
 
@@ -221,13 +216,13 @@ class LiquidLaunchClient:
             return graduations
 
         except Exception as e:
-            logger.error(f"Failed to fetch token graduations: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch token graduations: {e!s}", exc_info=True)
             if self.token_graduations_cache:
                 logger.info("Using cached token graduations")
                 return self.token_graduations_cache
             return []
 
-    def get_token_info(self, symbol: str) -> Dict[str, Any]:
+    def get_token_info(self, symbol: str) -> dict[str, Any]:
         """
         Get information about a token.
 
@@ -252,7 +247,5 @@ class LiquidLaunchClient:
             return {}
 
         except Exception as e:
-            logger.error(
-                f"Failed to get token info for {symbol}: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to get token info for {symbol}: {e!s}", exc_info=True)
             return {}

@@ -3,8 +3,8 @@ Tests for the TweetScheduler module.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 from src.core.scheduler import TweetScheduler
 from src.utils.config import Config
@@ -50,7 +50,9 @@ class TestTweetScheduler(unittest.TestCase):
         self.mock_hyperliquid_client_class.return_value = self.mock_hyperliquid_client
 
         # Patch LiquidLaunchClient initialization
-        self.liquidlaunch_client_patcher = patch("src.core.scheduler.LiquidLaunchClient")
+        self.liquidlaunch_client_patcher = patch(
+            "src.core.scheduler.LiquidLaunchClient"
+        )
         self.mock_liquidlaunch_client_class = self.liquidlaunch_client_patcher.start()
         self.mock_liquidlaunch_client = MagicMock()
         self.mock_liquidlaunch_client_class.return_value = self.mock_liquidlaunch_client

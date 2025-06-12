@@ -6,10 +6,9 @@ This module provides a simple REST API for monitoring and health checks.
 
 import logging
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 
 from src.utils.config import Config
 
@@ -19,11 +18,12 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="hypexbt Twitter Bot API",
     description="REST API for the hypexbt Twitter bot monitoring and management",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Global config (will be set on startup)
 config = None
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -32,42 +32,45 @@ async def startup_event():
     config = Config()
     logger.info("FastAPI server started")
 
+
 @app.get("/")
-async def root() -> Dict[str, Any]:
+async def root() -> dict[str, Any]:
     """
     Root endpoint - hello world.
-    
+
     Returns:
         A welcome message.
     """
     return {
         "message": "Hello World! hypexbt Twitter Bot API is running 🚀",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
+
 @app.get("/echo/{message}")
-async def echo(message: str) -> Dict[str, Any]:
+async def echo(message: str) -> dict[str, Any]:
     """
     Echo endpoint - returns the message back.
-    
+
     Args:
         message: The message to echo back.
-        
+
     Returns:
         The echoed message with metadata.
     """
     return {
         "echo": message,
         "timestamp": datetime.utcnow().isoformat(),
-        "length": len(message)
+        "length": len(message),
     }
 
+
 @app.get("/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check() -> dict[str, Any]:
     """
     Health check endpoint.
-    
+
     Returns:
         Health status of the bot.
     """
@@ -75,14 +78,15 @@ async def health_check() -> Dict[str, Any]:
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "service": "hypexbt-twitter-bot",
-        "uptime": "running"
+        "uptime": "running",
     }
 
+
 @app.get("/status")
-async def status() -> Dict[str, Any]:
+async def status() -> dict[str, Any]:
     """
     Status endpoint with more detailed information.
-    
+
     Returns:
         Detailed status of the bot.
     """
@@ -96,10 +100,12 @@ async def status() -> Dict[str, Any]:
             "echo": "/echo/{message}",
             "health": "/health",
             "status": "/status",
-            "docs": "/docs"
-        }
+            "docs": "/docs",
+        },
     }
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

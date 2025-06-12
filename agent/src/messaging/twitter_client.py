@@ -6,10 +6,7 @@ retweeting, and fetching tweets from other accounts.
 """
 
 import logging
-import time
-import random
-from typing import Dict, List, Any, Optional, Union
-from datetime import datetime, timedelta
+from typing import Any
 
 import tweepy
 
@@ -64,12 +61,10 @@ class TwitterClient:
             logger.info("Twitter client initialized successfully")
 
         except Exception as e:
-            logger.error(
-                f"Failed to initialize Twitter client: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to initialize Twitter client: {e!s}", exc_info=True)
             raise
 
-    def post_tweet(self, text: str, media_ids: List[str] = None) -> Dict[str, Any]:
+    def post_tweet(self, text: str, media_ids: list[str] = None) -> dict[str, Any]:
         """
         Post a tweet.
 
@@ -93,10 +88,10 @@ class TwitterClient:
             return response.data
 
         except Exception as e:
-            logger.error(f"Failed to post tweet: {str(e)}", exc_info=True)
+            logger.error(f"Failed to post tweet: {e!s}", exc_info=True)
             raise
 
-    def retweet(self, tweet_id: str) -> Dict[str, Any]:
+    def retweet(self, tweet_id: str) -> dict[str, Any]:
         """
         Retweet a tweet.
 
@@ -114,10 +109,10 @@ class TwitterClient:
             return response.data
 
         except Exception as e:
-            logger.error(f"Failed to retweet {tweet_id}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to retweet {tweet_id}: {e!s}", exc_info=True)
             raise
 
-    def quote_tweet(self, tweet_id: str, text: str) -> Dict[str, Any]:
+    def quote_tweet(self, tweet_id: str, text: str) -> dict[str, Any]:
         """
         Quote tweet.
 
@@ -146,10 +141,10 @@ class TwitterClient:
             return response.data
 
         except Exception as e:
-            logger.error(f"Failed to quote tweet {tweet_id}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to quote tweet {tweet_id}: {e!s}", exc_info=True)
             raise
 
-    def get_user_timeline(self, username: str, count: int = 10) -> List[Dict[str, Any]]:
+    def get_user_timeline(self, username: str, count: int = 10) -> list[dict[str, Any]]:
         """
         Get tweets from a user's timeline.
 
@@ -189,11 +184,11 @@ class TwitterClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to fetch tweets from @{username}: {str(e)}", exc_info=True
+                f"Failed to fetch tweets from @{username}: {e!s}", exc_info=True
             )
             return []
 
-    def search_tweets(self, query: str, count: int = 10) -> List[Dict[str, Any]]:
+    def search_tweets(self, query: str, count: int = 10) -> list[dict[str, Any]]:
         """
         Search for tweets.
 
@@ -229,9 +224,7 @@ class TwitterClient:
             return tweets
 
         except Exception as e:
-            logger.error(
-                f"Failed to search tweets for '{query}': {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to search tweets for '{query}': {e!s}", exc_info=True)
             return []
 
     def upload_media(self, media_path: str) -> str:
@@ -252,12 +245,10 @@ class TwitterClient:
             return media.media_id
 
         except Exception as e:
-            logger.error(
-                f"Failed to upload media {media_path}: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to upload media {media_path}: {e!s}", exc_info=True)
             raise
 
-    def get_hyperliquid_tweets(self, count: int = 10) -> List[Dict[str, Any]]:
+    def get_hyperliquid_tweets(self, count: int = 10) -> list[dict[str, Any]]:
         """
         Get tweets from Hyperliquid accounts.
 
@@ -284,10 +275,10 @@ class TwitterClient:
             return all_tweets[:count]
 
         except Exception as e:
-            logger.error(f"Failed to fetch Hyperliquid tweets: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch Hyperliquid tweets: {e!s}", exc_info=True)
             return []
 
-    def get_liquidlaunch_tweets(self, count: int = 10) -> List[Dict[str, Any]]:
+    def get_liquidlaunch_tweets(self, count: int = 10) -> list[dict[str, Any]]:
         """
         Get tweets from LiquidLaunch account.
 
@@ -302,9 +293,7 @@ class TwitterClient:
             return self.get_user_timeline(username="LiquidLaunchHL", count=count)
 
         except Exception as e:
-            logger.error(
-                f"Failed to fetch LiquidLaunch tweets: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to fetch LiquidLaunch tweets: {e!s}", exc_info=True)
             return []
 
     def is_rate_limited(self) -> bool:

@@ -6,7 +6,7 @@ This module generates tweets about Hyperliquid news and memes.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 from src.messaging.twitter_client import TwitterClient
 
@@ -27,7 +27,7 @@ class HyperliquidNewsTweetGenerator:
         """
         self.twitter_client = twitter_client
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about Hyperliquid news or memes.
 
@@ -93,6 +93,6 @@ class HyperliquidNewsTweetGenerator:
 
         except Exception as e:
             logger.error(
-                f"Failed to generate Hyperliquid news tweet: {str(e)}", exc_info=True
+                f"Failed to generate Hyperliquid news tweet: {e!s}", exc_info=True
             )
             return {"success": False, "error": str(e)}

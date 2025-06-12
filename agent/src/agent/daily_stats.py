@@ -6,8 +6,8 @@ This module generates tweets about daily Hyperliquid statistics.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
+from typing import Any
 
 from src.sources.hyperliquid_client import HyperliquidClient
 
@@ -31,7 +31,7 @@ class DailyStatsTweetGenerator:
         # Keep track of last tweet time to avoid tweeting too frequently
         self.last_tweet_time = None
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about daily Hyperliquid statistics.
 
@@ -114,7 +114,5 @@ class DailyStatsTweetGenerator:
             }
 
         except Exception as e:
-            logger.error(
-                f"Failed to generate daily stats tweet: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to generate daily stats tweet: {e!s}", exc_info=True)
             return {"success": False, "error": str(e)}

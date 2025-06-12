@@ -5,20 +5,20 @@ This module handles interactions with the Hyperliquid API to fetch market data
 and calculate trading signals.
 """
 
-import logging
-import time
 import json
-import asyncio
+import logging
 import random
-import websockets
-from typing import Dict, List, Any, Optional, Union, Callable
+import time
+from collections.abc import Callable
 from datetime import datetime, timedelta
+from typing import Any
 
-import requests
-import pandas as pd
 import numpy as np
-# import talib  # Commented out for testing
+import pandas as pd
+import requests
+import websockets
 
+# import talib  # Commented out for testing
 from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
@@ -62,13 +62,13 @@ class HyperliquidClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to initialize Hyperliquid client: {str(e)}", exc_info=True
+                f"Failed to initialize Hyperliquid client: {e!s}", exc_info=True
             )
             raise
 
     def _make_request(
-        self, endpoint: str, method: str = "GET", data: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, endpoint: str, method: str = "GET", data: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """
         Make a request to the Hyperliquid API with rate limiting.
 
@@ -101,10 +101,10 @@ class HyperliquidClient:
             return response.json()
 
         except Exception as e:
-            logger.error(f"API request failed: {str(e)}", exc_info=True)
+            logger.error(f"API request failed: {e!s}", exc_info=True)
             raise
 
-    def get_metadata(self, force_refresh: bool = False) -> List[Dict[str, Any]]:
+    def get_metadata(self, force_refresh: bool = False) -> list[dict[str, Any]]:
         """
         Get metadata about available assets.
 
@@ -135,7 +135,7 @@ class HyperliquidClient:
             return response
 
         except Exception as e:
-            logger.error(f"Failed to fetch metadata: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch metadata: {e!s}", exc_info=True)
             if self.metadata is not None:
                 logger.info("Using cached metadata")
                 return self.metadata
@@ -143,7 +143,7 @@ class HyperliquidClient:
 
     def get_candles(
         self, coin: str, interval: str = "15m", limit: int = 100
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get candles for a coin.
 
@@ -172,7 +172,7 @@ class HyperliquidClient:
             return response
 
         except Exception as e:
-            logger.error(f"Failed to fetch candles for {coin}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch candles for {coin}: {e!s}", exc_info=True)
 
             # Check if we have cached candles
             cache_key = f"{coin}_{interval}"
@@ -182,7 +182,7 @@ class HyperliquidClient:
 
             raise
 
-    def get_ticker(self, coin: str) -> Dict[str, Any]:
+    def get_ticker(self, coin: str) -> dict[str, Any]:
         """
         Get ticker data for a coin.
 
@@ -200,10 +200,10 @@ class HyperliquidClient:
             return response
 
         except Exception as e:
-            logger.error(f"Failed to fetch ticker for {coin}: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch ticker for {coin}: {e!s}", exc_info=True)
             raise
 
-    def get_funding_rates(self, coin: str) -> Dict[str, Any]:
+    def get_funding_rates(self, coin: str) -> dict[str, Any]:
         """
         Get funding rates for a coin.
 
@@ -222,11 +222,11 @@ class HyperliquidClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to fetch funding rates for {coin}: {str(e)}", exc_info=True
+                f"Failed to fetch funding rates for {coin}: {e!s}", exc_info=True
             )
             raise
 
-    def get_daily_stats(self) -> Dict[str, Any]:
+    def get_daily_stats(self) -> dict[str, Any]:
         """
         Get daily statistics for Hyperliquid.
 
@@ -278,7 +278,7 @@ class HyperliquidClient:
                         stats["top_losers"].append(coin_data)
 
                 except Exception as e:
-                    logger.warning(f"Failed to fetch data for {coin}: {str(e)}")
+                    logger.warning(f"Failed to fetch data for {coin}: {e!s}")
                     continue
 
             # Sort gainers and losers
@@ -289,10 +289,10 @@ class HyperliquidClient:
             return stats
 
         except Exception as e:
-            logger.error(f"Failed to fetch daily stats: {str(e)}", exc_info=True)
+            logger.error(f"Failed to fetch daily stats: {e!s}", exc_info=True)
             raise
 
-    def calculate_momentum_signals(self, coin: str) -> Dict[str, Any]:
+    def calculate_momentum_signals(self, coin: str) -> dict[str, Any]:
         """
         Calculate momentum signals for a coin.
 
@@ -333,12 +333,12 @@ class HyperliquidClient:
 
         except Exception as e:
             logger.error(
-                f"Failed to calculate momentum signals for {coin}: {str(e)}",
+                f"Failed to calculate momentum signals for {coin}: {e!s}",
                 exc_info=True,
             )
             raise
 
-    def _calculate_ema_signal(self, candles: List[Dict[str, Any]]) -> int:
+    def _calculate_ema_signal(self, candles: list[dict[str, Any]]) -> int:
         """
         Calculate EMA signal from candles.
 
@@ -363,13 +363,12 @@ class HyperliquidClient:
             # Calculate signal
             if ema_fast[-1] > ema_slow[-1]:
                 return 1  # Bullish
-            elif ema_fast[-1] < ema_slow[-1]:
+            if ema_fast[-1] < ema_slow[-1]:
                 return -1  # Bearish
-            else:
-                return 0  # Neutral
+            return 0  # Neutral
 
         except Exception as e:
-            logger.error(f"Failed to calculate EMA signal: {str(e)}", exc_info=True)
+            logger.error(f"Failed to calculate EMA signal: {e!s}", exc_info=True)
             return 0
 
     def _calculate_ema(self, prices: np.ndarray, period: int) -> np.ndarray:
@@ -394,7 +393,7 @@ class HyperliquidClient:
         return ema
 
     def _check_signal_change(
-        self, candles: List[Dict[str, Any]], current_signal: int
+        self, candles: list[dict[str, Any]], current_signal: int
     ) -> bool:
         """
         Check if the signal has changed in the last candle.
@@ -430,11 +429,11 @@ class HyperliquidClient:
             return previous_signal != current_signal
 
         except Exception as e:
-            logger.error(f"Failed to check signal change: {str(e)}", exc_info=True)
+            logger.error(f"Failed to check signal change: {e!s}", exc_info=True)
             return False
 
     async def start_websocket_streaming(
-        self, callback: Callable[[Dict[str, Any]], None]
+        self, callback: Callable[[dict[str, Any]], None]
     ):
         """
         Start WebSocket streaming for real-time data.
@@ -511,10 +510,10 @@ class HyperliquidClient:
                                     callback(signals)
                             except Exception as e:
                                 logger.error(
-                                    f"Failed to process candle update for {coin}: {str(e)}",
+                                    f"Failed to process candle update for {coin}: {e!s}",
                                     exc_info=True,
                                 )
 
         except Exception as e:
-            logger.error(f"WebSocket streaming error: {str(e)}", exc_info=True)
+            logger.error(f"WebSocket streaming error: {e!s}", exc_info=True)
             raise

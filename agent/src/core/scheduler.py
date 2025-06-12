@@ -6,26 +6,24 @@ This module handles scheduling and distributing tweets throughout the day.
 
 import logging
 import random
-import time
-from typing import Dict, List, Any, Optional, Callable
 from datetime import datetime, timedelta
-import asyncio
+from typing import Any
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from src.utils.config import Config
+from src.agent.daily_stats import DailyStatsTweetGenerator
+from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
+from src.agent.token_fundamentals import TokenFundamentalsTweetGenerator
+from src.agent.token_graduation import TokenGraduationTweetGenerator
+from src.agent.token_launch import TokenLaunchTweetGenerator
+from src.agent.trading_signal import TradingSignalTweetGenerator
 from src.messaging.twitter_client import TwitterClient
+from src.sources.coingecko_client import CoinGeckoClient
 from src.sources.hyperliquid_client import HyperliquidClient
 from src.sources.liquidlaunch_client import LiquidLaunchClient
-from src.sources.coingecko_client import CoinGeckoClient
-from src.agent.hyperliquid_news import HyperliquidNewsTweetGenerator
-from src.agent.token_launch import TokenLaunchTweetGenerator
-from src.agent.token_graduation import TokenGraduationTweetGenerator
-from src.agent.trading_signal import TradingSignalTweetGenerator
-from src.agent.daily_stats import DailyStatsTweetGenerator
-from src.agent.token_fundamentals import TokenFundamentalsTweetGenerator
+from src.utils.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -120,9 +118,7 @@ class TweetScheduler:
             logger.info("Tweet scheduler initialized successfully")
 
         except Exception as e:
-            logger.error(
-                f"Failed to initialize tweet scheduler: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to initialize tweet scheduler: {e!s}", exc_info=True)
             raise
 
     def start(self):
@@ -131,7 +127,7 @@ class TweetScheduler:
             self.scheduler.start()
             logger.info("Tweet scheduler started")
         except Exception as e:
-            logger.error(f"Failed to start tweet scheduler: {str(e)}", exc_info=True)
+            logger.error(f"Failed to start tweet scheduler: {e!s}", exc_info=True)
             raise
 
     def stop(self):
@@ -140,7 +136,7 @@ class TweetScheduler:
             self.scheduler.shutdown()
             logger.info("Tweet scheduler stopped")
         except Exception as e:
-            logger.error(f"Failed to stop tweet scheduler: {str(e)}", exc_info=True)
+            logger.error(f"Failed to stop tweet scheduler: {e!s}", exc_info=True)
 
     def _reset_tweet_count(self):
         """Reset the tweet count for the day."""
@@ -176,7 +172,7 @@ class TweetScheduler:
             else:
                 # Handle wrap around midnight
                 active_hours = list(range(active_hours_start, 24)) + list(
-                    range(0, active_hours_end + 1)
+                    range(active_hours_end + 1)
                 )
 
             # Calculate remaining active hours for today
@@ -277,7 +273,7 @@ class TweetScheduler:
             logger.info(f"Generated tweet schedule with {len(self.tweet_queue)} tweets")
 
         except Exception as e:
-            logger.error(f"Failed to generate tweet schedule: {str(e)}", exc_info=True)
+            logger.error(f"Failed to generate tweet schedule: {e!s}", exc_info=True)
             raise
 
     def _check_trading_signals(self):
@@ -326,7 +322,7 @@ class TweetScheduler:
                         break
 
         except Exception as e:
-            logger.error(f"Failed to check trading signals: {str(e)}", exc_info=True)
+            logger.error(f"Failed to check trading signals: {e!s}", exc_info=True)
             raise
 
     def _check_token_events(self):
@@ -358,7 +354,7 @@ class TweetScheduler:
                 self._post_tweet(graduation_tweet_data)
 
         except Exception as e:
-            logger.error(f"Failed to check token events: {str(e)}", exc_info=True)
+            logger.error(f"Failed to check token events: {e!s}", exc_info=True)
             raise
 
     def _process_tweet_queue(self):
@@ -405,10 +401,10 @@ class TweetScheduler:
                     logger.warning(f"Unknown tweet type: {tweet_type}")
 
         except Exception as e:
-            logger.error(f"Failed to process tweet queue: {str(e)}", exc_info=True)
+            logger.error(f"Failed to process tweet queue: {e!s}", exc_info=True)
             raise
 
-    def _post_tweet(self, tweet_data: Dict[str, Any]):
+    def _post_tweet(self, tweet_data: dict[str, Any]):
         """
         Post a tweet.
 
@@ -457,7 +453,7 @@ class TweetScheduler:
                 self.tweet_history = self.tweet_history[-100:]
 
         except Exception as e:
-            logger.error(f"Failed to post tweet: {str(e)}", exc_info=True)
+            logger.error(f"Failed to post tweet: {e!s}", exc_info=True)
             raise
 
     async def start_websocket_streaming(self):
@@ -467,10 +463,10 @@ class TweetScheduler:
                 self._handle_websocket_signal
             )
         except Exception as e:
-            logger.error(f"WebSocket streaming error: {str(e)}", exc_info=True)
+            logger.error(f"WebSocket streaming error: {e!s}", exc_info=True)
             raise
 
-    def _handle_websocket_signal(self, signal_data: Dict[str, Any]):
+    def _handle_websocket_signal(self, signal_data: dict[str, Any]):
         """
         Handle a trading signal from WebSocket.
 
@@ -503,10 +499,10 @@ class TweetScheduler:
             self._post_tweet(tweet_data)
 
         except Exception as e:
-            logger.error(f"Failed to handle WebSocket signal: {str(e)}", exc_info=True)
+            logger.error(f"Failed to handle WebSocket signal: {e!s}", exc_info=True)
             raise
 
-    def _generate_signal_tweet_text(self, signal_data: Dict[str, Any]) -> str:
+    def _generate_signal_tweet_text(self, signal_data: dict[str, Any]) -> str:
         """
         Generate tweet text for a trading signal.
 

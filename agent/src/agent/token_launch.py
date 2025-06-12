@@ -6,8 +6,7 @@ This module generates tweets about new token launches.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
+from typing import Any
 
 from src.sources.liquidlaunch_client import LiquidLaunchClient
 
@@ -31,7 +30,7 @@ class TokenLaunchTweetGenerator:
         # Keep track of tweeted launches to avoid duplicates
         self.tweeted_launches = set()
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about a new token launch.
 
@@ -84,7 +83,5 @@ class TokenLaunchTweetGenerator:
             }
 
         except Exception as e:
-            logger.error(
-                f"Failed to generate token launch tweet: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to generate token launch tweet: {e!s}", exc_info=True)
             return {"success": False, "error": str(e)}

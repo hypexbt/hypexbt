@@ -6,8 +6,8 @@ This module generates tweets about token fundamental analysis.
 
 import logging
 import random
-from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
+from typing import Any
 
 from src.sources.coingecko_client import CoinGeckoClient
 from src.sources.hyperliquid_client import HyperliquidClient
@@ -50,7 +50,7 @@ class TokenFundamentalsTweetGenerator:
             "AAVE",
         ]
 
-    def generate_tweet(self) -> Dict[str, Any]:
+    def generate_tweet(self) -> dict[str, Any]:
         """
         Generate a tweet about token fundamentals.
 
@@ -188,6 +188,6 @@ class TokenFundamentalsTweetGenerator:
 
         except Exception as e:
             logger.error(
-                f"Failed to generate token fundamentals tweet: {str(e)}", exc_info=True
+                f"Failed to generate token fundamentals tweet: {e!s}", exc_info=True
             )
             return {"success": False, "error": str(e)}
