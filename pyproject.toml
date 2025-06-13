@@ -6,7 +6,6 @@ build-backend = "hatchling.build"
 name = "hypexbt"
 version = "0.1.0"
 description = "A Twitter bot that tweets about Hyperliquid exchange, token launches, trading signals, and stats"
-readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13"
 authors = [

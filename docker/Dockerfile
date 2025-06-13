@@ -9,14 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy project files
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml ./
 COPY src/ ./src/
 
-# Install uv for faster dependency management
-RUN pip install --no-cache-dir uv
-
-# Install dependencies using uv
-RUN uv sync --frozen
+# Install dependencies directly with pip
+RUN pip install --no-cache-dir -e .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -34,4 +31,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uv", "run", "python", "-m", "src.main"]
+CMD ["python", "-m", "src.main"]
