@@ -40,7 +40,9 @@ class Config:
     @property
     def redis_url(self) -> str:
         """Get the Redis URL."""
-        return os.getenv("REDIS_URL", "redis://localhost:6379")
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        logger.info(f"Redis URL from environment: {redis_url}")
+        return redis_url
 
     def _validate_config(self):
         """Validate that required configuration is present."""
@@ -102,4 +104,9 @@ class Config:
     @property
     def use_live_twitter(self) -> bool:
         """Check if live Twitter API should be used."""
-        return os.getenv("USE_LIVE_TWITTER", "false").lower() in ("true", "1", "yes", "on")
+        return os.getenv("USE_LIVE_TWITTER", "false").lower() in (
+            "true",
+            "1",
+            "yes",
+            "on",
+        )
