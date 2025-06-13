@@ -1,39 +1,37 @@
 # hypexbt Twitter Bot
 
-A Twitter bot system that tweets 10-20 times per day about Hyperliquid exchange, token launches, trading signals, stats, and token fundamentals. Built as a modular monorepo with separate API and agent services.
+A Twitter bot system that tweets 10-20 times per day about Hyperliquid exchange, token launches, trading signals, stats, and token fundamentals. Built with a single-container architecture using Redis for queue processing, designed for easy future scaling.
 
 ## Architecture Overview
 
 ### Current System
 
-The project is structured as a monorepo with two main services:
+The project uses a **single-container architecture** with Redis queue processing:
 
-- **API Service**: FastAPI backend for webhooks and external integrations
-- **Agent Service**: Twitter bot with intelligent scheduling and content generation
+- **Single Service**: FastAPI backend + Twitter bot agent in one container
+- **Redis Queue**: Handles background job processing and tweet scheduling
+- **Background Jobs**: APScheduler runs data scraping and content generation
+- **Future-Ready**: Designed to easily split into multiple containers when needed
 
 ### Architecture
 
 ```mermaid
 graph TB
-    subgraph "Frontend Layer"
-        FE[Next.js Frontend<br/>Dashboard & Analytics]
+    subgraph "Single Container"
+        API[FastAPI Server<br/>External Webhooks]
+        SCHED[APScheduler<br/>Background Jobs]
+        WORKER[Queue Worker<br/>Tweet Processing]
+        BOT[Twitter Bot<br/>Content Generation]
     end
 
-    subgraph "API Layer"
-        API[Python FastAPI<br/>REST API & Webhooks]
-        WS[WebSocket Server<br/>Real-time Updates]
+    subgraph "Queue Layer"
+        REDIS[(Redis Queue<br/>Job Processing)]
     end
 
-    subgraph "Agent Layer"
-        BOT[Twitter Bot Agent<br/>Content Generation]
-        SCHED[Scheduler<br/>Tweet Orchestration]
-        SIGNAL[Signal Processor<br/>Trading Alerts]
-    end
-
-    subgraph "Data Layer"
-        CRON[Data Ingestion<br/>Python Cron Jobs]
-        REDIS[(Redis Cache<br/>Sessions & Queue)]
-        PG[(PostgreSQL<br/>Persistent Data)]
+    subgraph "Background Jobs"
+        SCRAPE[Data Scrapers<br/>Every 15-30min]
+        SIGNAL[Signal Generator<br/>Real-time]
+        STATS[Stats Collector<br/>Daily]
     end
 
     subgraph "External APIs"
@@ -43,48 +41,50 @@ graph TB
         LL[LiquidLaunch<br/>Token Events]
     end
 
-    FE --> API
-    FE --> WS
-    API --> BOT
     API --> REDIS
-    API --> PG
-    WS --> REDIS
+    SCHED --> SCRAPE
+    SCHED --> SIGNAL
+    SCHED --> STATS
 
-    BOT --> SCHED
-    BOT --> SIGNAL
-    SCHED --> REDIS
+    SCRAPE --> REDIS
     SIGNAL --> REDIS
+    STATS --> REDIS
 
-    CRON --> HL
-    CRON --> CG
-    CRON --> LL
-    CRON --> PG
-    CRON --> REDIS
-
+    WORKER --> REDIS
+    WORKER --> BOT
     BOT --> TW
-    API --> TW
 
-    classDef frontend fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000
-    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef agent fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
-    classDef data fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+    SCRAPE --> HL
+    SCRAPE --> CG
+    SCRAPE --> LL
+
+    classDef container fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px,color:#000
+    classDef queue fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef jobs fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
     classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000
 
-    class FE frontend
-    class API,WS api
-    class BOT,SCHED,SIGNAL agent
-    class CRON,REDIS,PG data
+    class API,SCHED,WORKER,BOT container
+    class REDIS queue
+    class SCRAPE,SIGNAL,STATS jobs
     class HL,CG,TW,LL external
 ```
+
+### Data Flow
+
+1. **Background Jobs**: APScheduler runs scrapers every 15-30 minutes
+2. **Content Generation**: Jobs create tweet content and add to Redis queue
+3. **Queue Processing**: Worker processes queue and posts tweets via Twitter API
+4. **External Triggers**: API endpoints can add tweets directly to queue
+5. **Real-time Signals**: WebSocket monitoring adds urgent tweets to queue
 
 ## Features
 
 - **Intelligent Content Generation**: 6 different tweet types with configurable distribution
-- **Real-time Monitoring**: WebSocket connections for live trading signals
+- **Redis Queue Processing**: Reliable background job processing with persistence
 - **Smart Scheduling**: Respects rate limits and optimal posting times
 - **Multi-source Integration**: Hyperliquid, CoinGecko, LiquidLaunch APIs
 - **Monitoring & Alerts**: Slack notifications for errors and performance
-- **Modular Architecture**: Separate services for API and bot functionality
+- **Future-Ready Architecture**: Easy to split into multiple containers when scaling needed
 
 ### Content Types
 
@@ -99,37 +99,31 @@ graph TB
 
 ```
 hypexbt/
-├── api/                         # FastAPI backend service
-│   ├── main.py                  # API server with health/echo endpoints
-│   ├── pyproject.toml           # API dependencies
-│   └── .tool-versions           # Python version
-├── agent/                       # Twitter bot service
-│   ├── src/                     # Agent source code
-│   │   ├── agent/               # Bot logic and scheduling
-│   │   ├── api/                 # API clients
-│   │   ├── core/                # Core functionality
-│   │   ├── messaging/           # Tweet generation
-│   │   ├── sources/             # Data source integrations
-│   │   └── utils/               # Utility functions
-│   ├── pyproject.toml           # Agent dependencies
-│   └── .tool-versions           # Python version
+├── src/                         # Main application code
+│   ├── api/                     # FastAPI server and endpoints
+│   ├── agent/                   # Twitter bot logic and scheduling
+│   ├── core/                    # Core functionality and main entry
+│   ├── messaging/               # Tweet generation engines
+│   ├── sources/                 # Data source integrations
+│   ├── queue/                   # Redis queue service and workers
+│   └── utils/                   # Utility functions and config
 ├── docker/                      # Docker configurations
-│   ├── Dockerfile.api           # API service container
-│   ├── Dockerfile.agent         # Agent service container
-│   └── docker-compose.yml       # Local development setup
+│   ├── Dockerfile               # Single container build
+│   └── docker-compose.yml       # Local development with Redis
 ├── docs/                        # Documentation
 │   ├── api.md                   # API documentation
 │   ├── arch.md                  # Architecture details
-│   └── monorepo.md              # Monorepo strategy
+│   └── deployment.md            # Deployment guides
 ├── tests/                       # Test suite
 ├── Makefile                     # Development commands
-├── pyproject.toml               # Root project configuration
+├── pyproject.toml               # Dependencies and configuration
 └── README.md                    # This file
 ```
 
 ## Requirements
 
 - Python 3.13+
+- Redis (for queue processing)
 - Twitter API credentials
 - Hyperliquid API access
 - CoinGecko API access (optional)
@@ -154,55 +148,58 @@ uv sync
 cp .env.example .env
 # Edit .env with your API credentials
 
-# Run the API service
-make dev-api
-
-# Run the agent service (in another terminal)
-cd agent
-uv run python -m src.main
+# Start Redis and the application
+docker-compose up -d
 ```
 
 ### Docker Development
 
 ```bash
-# Build and run all services
+# Build and run all services (app + Redis)
 docker-compose up -d
 
 # View logs
-docker-compose logs -f
+docker-compose logs -f hypexbt-app
 
 # Stop services
 docker-compose down
 ```
 
-## Deployment on Railway
+## API Endpoints
 
-### 1. Fork and Connect Repository
+The application provides several endpoints:
 
-1. Fork this repository to your GitHub account
-2. Sign up for [Railway](https://railway.app) if you haven't already
-3. Create a new project and connect your GitHub repository
+- `GET /` - Welcome message with system info
+- `GET /health` - Health check endpoint
+- `POST /api/tweet` - Trigger tweet generation (webhook endpoint)
+- `GET /api/queue/status` - View queue status and metrics
+- `POST /api/queue/clear` - Clear tweet queue (admin)
 
-### 2. Deploy API Service
+## Background Jobs
 
-1. Create a new service in Railway
-2. **Name**: `hypexbt-api`
-3. **Root Directory**: `api`
-4. **Build Command**: `pip install -e .`
-5. **Start Command**: `python main.py`
-6. **Port**: `8000`
+The system runs several background jobs via APScheduler:
 
-### 3. Deploy Agent Service
+### Scheduled Jobs
 
-1. Create another service in Railway
-2. **Name**: `hypexbt-agent`
-3. **Root Directory**: `agent`
-4. **Build Command**: `pip install -e .`
-5. **Start Command**: `python -m src.main`
+- **Daily Reset** (00:00 UTC): Reset tweet counters and generate daily schedule
+- **Token Scraper** (every 30min): Check LiquidLaunch for new tokens/graduations
+- **Signal Generator** (every 15min): Generate trading signals from Hyperliquid data
+- **Stats Collector** (daily): Compile daily market statistics
+- **News Scraper** (every 2 hours): Check official Twitter accounts for retweet content
 
-### 4. Configure Environment Variables
+### Queue Processing
 
-Add these environment variables to both services:
+- **Tweet Worker**: Continuously processes Redis queue and posts tweets
+- **Rate Limiting**: Ensures 10-20 tweets per day with proper spacing
+- **Error Handling**: Failed tweets are retried with exponential backoff
+
+## Deployment
+
+### Railway Deployment
+
+1. **Create Railway Project**: Connect your GitHub repository
+2. **Add Redis**: Add Redis service to your Railway project
+3. **Configure Environment Variables**:
 
 ```bash
 # Twitter API credentials
@@ -212,6 +209,9 @@ X_BEARER_TOKEN=your_bearer_token
 X_ACCESS_TOKEN=your_access_token
 X_ACCESS_TOKEN_SECRET=your_access_token_secret
 
+# Redis connection
+REDIS_URL=redis://redis:6379
+
 # API endpoints
 HL_API_URL=https://api.hyperliquid.xyz
 COINGECKO_API=https://api.coingecko.com/api/v3
@@ -219,20 +219,28 @@ COINGECKO_API=https://api.coingecko.com/api/v3
 # Optional: Slack webhook for error reporting
 SLACK_WEBHOOK=your_slack_webhook_url
 
-# Optional: Tweet scheduling configuration
+# Tweet scheduling configuration
 MIN_TWEETS_PER_DAY=10
 MAX_TWEETS_PER_DAY=20
 MIN_INTERVAL_MINUTES=30
 MAX_INTERVAL_MINUTES=180
 ```
 
-### 5. Database Setup (Future)
+4. **Deploy**: Railway will automatically build and deploy your application
 
-For the future architecture with PostgreSQL:
+### Future Scaling
 
-1. Add a PostgreSQL database service in Railway
-2. Connect it to both API and agent services
-3. Update environment variables with database credentials
+When you need to scale, the architecture easily splits into:
+
+```
+API Container:              Worker Container:
+├── FastAPI Server         ├── APScheduler (background jobs)
+├── Webhook Endpoints      ├── Queue Worker
+└── Queue Publisher        ├── Tweet Generators
+                          └── Twitter Client
+            ↓                       ↑
+        Redis Queue (shared between containers)
+```
 
 ## Development Tools
 
@@ -240,6 +248,7 @@ This project uses modern Python tooling:
 
 - **uv**: Fast Python package manager
 - **ruff**: Lightning-fast linter and formatter
+- **Redis**: Queue processing and caching
 - **Docker**: Containerization for consistent environments
 - **pytest**: Testing framework
 
@@ -253,11 +262,11 @@ uv run ruff format .
 # Run tests
 uv run pytest
 
-# Build API service
-make build-api
+# Start development environment
+docker-compose up -d
 
-# Test API endpoints
-make test-api
+# View application logs
+docker-compose logs -f hypexbt-app
 
 # See all available commands
 make help
@@ -278,7 +287,7 @@ See [docs/api.md](docs/api.md) for detailed API documentation.
 For detailed technical documentation:
 
 - [Architecture Overview](docs/arch.md) - System design and data flow
-- [Monorepo Strategy](docs/monorepo.md) - Project structure and development workflow
+- [Deployment Guides](docs/deployment.md) - Deployment and scaling strategies
 - [API Documentation](docs/api.md) - API endpoints and usage
 
 ## Contributing
