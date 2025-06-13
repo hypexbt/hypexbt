@@ -13,6 +13,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from src.utils.config import Config
+from src.queue.service import QueueService
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,19 @@ class TweetResponse(BaseModel):
     status: str
     message: str
     tweet_id: str | None = None
+    job_id: str | None = None
 
 
 class EchoResponse(BaseModel):
     echo: str
     timestamp: str
     length: int
+
+
+class QueueStatsResponse(BaseModel):
+    total_jobs: int
+    queues: Dict[str, int]
+    total_processed: str
 
 
 def create_app(config: Config) -> FastAPI:
@@ -50,6 +58,21 @@ def create_app(config: Config) -> FastAPI:
         description="REST API for the hypexbt Twitter bot monitoring and management",
         version="1.0.0",
     )
+
+    # Initialize queue service
+    queue_service = QueueService(config.redis_url)
+
+    @app.on_event("startup")
+    async def startup_event():
+        """Initialize services on startup."""
+        await queue_service.connect()
+        logger.info("FastAPI server started with Redis queue service")
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        """Cleanup on shutdown."""
+        await queue_service.disconnect()
+        logger.info("FastAPI server shutdown complete")
 
     @app.get("/", response_model=Dict[str, Any])
     async def root() -> Dict[str, Any]:
@@ -84,32 +107,88 @@ def create_app(config: Config) -> FastAPI:
     @app.post("/api/tweet", response_model=TweetResponse)
     async def trigger_tweet(request: TweetRequest) -> TweetResponse:
         """
-        Trigger a tweet to be added to the queue.
-        
-        This endpoint will eventually add tweets to the Redis queue,
-        but for now it just returns a success response.
+        Trigger a tweet to be added to the Redis queue.
         """
-        logger.info(f"Tweet request received: {request.content[:50]}...")
-        
-        # TODO: Add to Redis queue
-        # For now, just return success
-        return TweetResponse(
-            status="queued",
-            message=f"Tweet queued successfully with priority {request.priority}",
-            tweet_id=None,  # Will be set when actually posted
-        )
+        try:
+            # Add tweet to Redis queue
+            job_id = await queue_service.add_tweet_job(
+                content=request.content,
+                priority=request.priority,
+                tweet_type=request.tweet_type,
+                timestamp=datetime.utcnow().isoformat()
+            )
+            
+            logger.info(f"Tweet job {job_id} queued: {request.content[:50]}...")
+            
+            return TweetResponse(
+                status="queued",
+                message=f"Tweet queued successfully with priority {request.priority}",
+                tweet_id=None,  # Will be set when actually posted
+                job_id=job_id
+            )
+        except Exception as e:
+            logger.error(f"Failed to queue tweet: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to queue tweet: {str(e)}")
+
+    @app.get("/api/queue/stats", response_model=QueueStatsResponse)
+    async def queue_stats() -> QueueStatsResponse:
+        """Get Redis queue statistics."""
+        try:
+            stats = await queue_service.get_queue_stats()
+            return QueueStatsResponse(**stats)
+        except Exception as e:
+            logger.error(f"Failed to get queue stats: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to get queue stats: {str(e)}")
+
+    @app.get("/api/queue/peek/{priority}")
+    async def peek_queue(priority: int, count: int = 5) -> Dict[str, Any]:
+        """Peek at jobs in a specific priority queue."""
+        try:
+            jobs = await queue_service.peek_queue(priority, count)
+            return {
+                "queue": f"tweets_priority_{priority}",
+                "count": len(jobs),
+                "jobs": jobs
+            }
+        except Exception as e:
+            logger.error(f"Failed to peek queue: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to peek queue: {str(e)}")
+
+    @app.delete("/api/queue/clear")
+    async def clear_queue(priority: int | None = None) -> Dict[str, Any]:
+        """Clear jobs from queue(s)."""
+        try:
+            cleared = await queue_service.clear_queue(priority)
+            return {
+                "status": "success",
+                "cleared_jobs": cleared,
+                "message": f"Cleared {cleared} jobs from {'all queues' if priority is None else f'priority {priority} queue'}"
+            }
+        except Exception as e:
+            logger.error(f"Failed to clear queue: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to clear queue: {str(e)}")
 
     @app.get("/api/status", response_model=Dict[str, Any])
     async def status() -> Dict[str, Any]:
         """Detailed status endpoint."""
+        try:
+            # Check Redis connection
+            redis_connected = True
+            queue_stats = await queue_service.get_queue_stats()
+        except Exception:
+            redis_connected = False
+            queue_stats = {"error": "Redis not connected"}
+
         return {
             "service": "hypexbt-twitter-bot",
             "status": "running",
             "timestamp": datetime.utcnow().isoformat(),
             "config_loaded": True,
-            "redis_connected": False,  # TODO: Check Redis connection
+            "redis_connected": redis_connected,
+            "queue_stats": queue_stats,
             "components": {
                 "api_server": "running",
+                "redis_queue": "connected" if redis_connected else "disconnected",
                 "scheduler": "not_implemented",
                 "queue_worker": "not_implemented",
             },
@@ -118,6 +197,9 @@ def create_app(config: Config) -> FastAPI:
                 "health": "/health",
                 "echo": "/api/echo/{message}",
                 "tweet": "/api/tweet",
+                "queue_stats": "/api/queue/stats",
+                "queue_peek": "/api/queue/peek/{priority}",
+                "queue_clear": "/api/queue/clear",
                 "status": "/api/status",
                 "docs": "/docs",
             },

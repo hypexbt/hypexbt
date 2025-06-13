@@ -37,6 +37,11 @@ class Config:
         """Get the logging level."""
         return os.getenv("LOG_LEVEL", "INFO").upper()
 
+    @property
+    def redis_url(self) -> str:
+        """Get the Redis URL."""
+        return os.getenv("REDIS_URL", "redis://localhost:6379")
+
     def _validate_config(self):
         """Validate that required configuration is present."""
         required_vars = [

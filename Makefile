@@ -1,6 +1,6 @@
 # hypexbt Monorepo Makefile
 
-.PHONY: help install install-dev lint format type-check test build-api run-api stop-api clean-api test-api logs-api check-all redis-start redis-stop redis-logs redis-cli redis-clean dev-full compose-up compose-down compose-logs compose-redis-only
+.PHONY: help install install-dev lint format type-check test build-api run-api stop-api clean-api test-api logs-api check-all redis-start redis-stop redis-logs redis-cli redis-clean dev-full compose-backend compose-down compose-logs compose-redis-only
 
 # Default target
 help:
@@ -23,7 +23,7 @@ help:
 	@echo "  redis-clean   - Stop and remove Redis container"
 	@echo ""
 	@echo "Docker Compose:"
-	@echo "  compose-up    - Start all services with docker-compose"
+	@echo "  compose-backend - Start all backend services with docker-compose"
 	@echo "  compose-down  - Stop all services with docker-compose"
 	@echo "  compose-logs  - Show logs from all services"
 	@echo "  compose-redis-only - Start only Redis with docker-compose"
@@ -98,7 +98,7 @@ redis-clean: redis-stop
 	-docker rm hypexbt-redis
 
 # Docker Compose targets (alternative to individual containers)
-compose-up:
+compose-backend:
 	@echo "Starting all services with docker-compose..."
 	cd docker && docker-compose up -d
 	@echo "✅ Services started:"
