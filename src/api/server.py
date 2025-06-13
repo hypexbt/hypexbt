@@ -61,7 +61,7 @@ def create_app(config: Config) -> FastAPI:
     )
 
     queue_service = QueueService(config.redis_url)
-    
+
     # Store services in app state for access by other components
     app.state.queue_service = queue_service
     app.state.config = config
@@ -69,8 +69,12 @@ def create_app(config: Config) -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize services on startup."""
-        await queue_service.connect()
-        logger.info("FastAPI server started with Redis queue service")
+        try:
+            await queue_service.connect()
+            logger.info("FastAPI server started with Redis queue service")
+        except Exception as e:
+            logger.warning(f"Failed to connect to Redis during startup: {e}")
+            logger.info("FastAPI server started without Redis connection")
 
     @app.on_event("shutdown")
     async def shutdown_event():
@@ -92,10 +96,18 @@ def create_app(config: Config) -> FastAPI:
     @app.get("/health", response_model=HealthResponse)
     async def health_check() -> HealthResponse:
         """Health check endpoint for monitoring."""
+        # Try to check Redis connection but don't fail if it's down
+        redis_status = "unknown"
+        try:
+            await queue_service.get_queue_stats()
+            redis_status = "connected"
+        except Exception:
+            redis_status = "disconnected"
+
         return HealthResponse(
-            status="healthy",
+            status="healthy",  # Server is healthy even if Redis is down
             timestamp=datetime.utcnow().isoformat(),
-            service="hypexbt-twitter-bot",
+            service=f"hypexbt-twitter-bot (redis: {redis_status})",
             version="1.0.0",
         )
 
@@ -115,22 +127,22 @@ def create_app(config: Config) -> FastAPI:
         """
         try:
             job_id = await TweetJob.add_to_queue(
-                queue_service,
-                content=request.content,
-                priority=request.priority
+                queue_service, content=request.content, priority=request.priority
             )
-            
+
             logger.info(f"Tweet job {job_id} queued: {request.content[:50]}...")
-            
+
             return TweetResponse(
                 status="queued",
                 message=f"Tweet queued successfully with priority {request.priority}",
                 tweet_id=None,
-                job_id=job_id
+                job_id=job_id,
             )
         except Exception as e:
             logger.error(f"Failed to queue tweet: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to queue tweet: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to queue tweet: {str(e)}"
+            )
 
     @app.get("/api/queue/stats", response_model=QueueStatsResponse)
     async def queue_stats() -> QueueStatsResponse:
@@ -140,7 +152,9 @@ def create_app(config: Config) -> FastAPI:
             return QueueStatsResponse(**stats)
         except Exception as e:
             logger.error(f"Failed to get queue stats: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to get queue stats: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to get queue stats: {str(e)}"
+            )
 
     @app.get("/api/queue/peek/{priority}")
     async def peek_queue(priority: int, count: int = 5) -> Dict[str, Any]:
@@ -150,11 +164,13 @@ def create_app(config: Config) -> FastAPI:
             return {
                 "queue": f"jobs_priority_{priority}",
                 "count": len(jobs),
-                "jobs": jobs
+                "jobs": jobs,
             }
         except Exception as e:
             logger.error(f"Failed to peek queue: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to peek queue: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to peek queue: {str(e)}"
+            )
 
     @app.delete("/api/queue/clear")
     async def clear_queue(priority: int | None = None) -> Dict[str, Any]:
@@ -164,11 +180,13 @@ def create_app(config: Config) -> FastAPI:
             return {
                 "status": "success",
                 "cleared_jobs": cleared,
-                "message": f"Cleared {cleared} jobs from {'all queues' if priority is None else f'priority {priority} queue'}"
+                "message": f"Cleared {cleared} jobs from {'all queues' if priority is None else f'priority {priority} queue'}",
             }
         except Exception as e:
             logger.error(f"Failed to clear queue: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to clear queue: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to clear queue: {str(e)}"
+            )
 
     @app.get("/api/status", response_model=Dict[str, Any])
     async def status() -> Dict[str, Any]:
@@ -207,4 +225,4 @@ def create_app(config: Config) -> FastAPI:
             },
         }
 
-    return app 
+    return app
