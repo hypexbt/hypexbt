@@ -69,12 +69,14 @@ def create_app(config: Config) -> FastAPI:
     @app.on_event("startup")
     async def startup_event():
         """Initialize services on startup."""
+        logger.info(f"Attempting to connect to Redis at: {config.redis_url}")
         try:
             await queue_service.connect()
             logger.info("FastAPI server started with Redis queue service")
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis during startup: {e}")
-            logger.info("FastAPI server started without Redis connection")
+            logger.error(f"Failed to connect to Redis: {e}")
+            logger.error(f"Redis URL was: {config.redis_url}")
+            raise
 
     @app.on_event("shutdown")
     async def shutdown_event():
@@ -96,18 +98,10 @@ def create_app(config: Config) -> FastAPI:
     @app.get("/health", response_model=HealthResponse)
     async def health_check() -> HealthResponse:
         """Health check endpoint for monitoring."""
-        # Try to check Redis connection but don't fail if it's down
-        redis_status = "unknown"
-        try:
-            await queue_service.get_queue_stats()
-            redis_status = "connected"
-        except Exception:
-            redis_status = "disconnected"
-
         return HealthResponse(
-            status="healthy",  # Server is healthy even if Redis is down
+            status="healthy",
             timestamp=datetime.utcnow().isoformat(),
-            service=f"hypexbt-twitter-bot (redis: {redis_status})",
+            service="hypexbt-twitter-bot",
             version="1.0.0",
         )
 
