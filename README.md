@@ -89,8 +89,8 @@ graph TB
 ### Content Types
 
 - 15% → Retweets and quote-tweets from @HyperliquidExch / @HyperliquidLabs
-- 20% → Fresh Token Launch announcements from LiquidLaunch
-- 20% → Token Graduations/Migrations from LiquidLaunch
+- 20% → Fresh Token Launch announcements from LiquidLaunch / Hypurrfun
+- 20% → Token Graduations/Migrations from LiquidLaunch / Hypurrfun
 - 15% → Auto-generated perp trading signals (15-min & 1-h momentum crosses)
 - 15% → Daily Hyperliquid stats (24h volume, OI, top gainer/loser)
 - 15% → Token fundamental snapshots (circ supply, FDV, major backers)
