@@ -32,6 +32,11 @@ class Config:
 
         self._validate_config()
 
+    @property
+    def log_level(self) -> str:
+        """Get the logging level."""
+        return os.getenv("LOG_LEVEL", "INFO").upper()
+
     def _validate_config(self):
         """Validate that required configuration is present."""
         required_vars = [
