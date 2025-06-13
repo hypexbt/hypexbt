@@ -100,22 +100,22 @@ redis-clean: redis-stop
 # Docker Compose targets (alternative to individual containers)
 compose-backend:
 	@echo "Starting all services with docker-compose..."
-	cd docker && docker-compose up -d
+	cd docker && docker compose up -d
 	@echo "✅ Services started:"
 	@echo "  Redis: localhost:6379"
 	@echo "  App: localhost:8000"
 
 compose-down:
 	@echo "Stopping all services..."
-	cd docker && docker-compose down
+	cd docker && docker compose down
 
 compose-logs:
 	@echo "Service logs:"
-	cd docker && docker-compose logs -f
+	cd docker && docker compose logs -f
 
 compose-redis-only:
 	@echo "Starting only Redis with docker-compose..."
-	cd docker && docker-compose up -d redis
+	cd docker && docker compose up -d redis
 	@echo "✅ Redis started on port 6379"
 
 # Application targets
