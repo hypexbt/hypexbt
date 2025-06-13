@@ -39,9 +39,10 @@ class Worker:
         """Setup rate limiters for different job types."""
         tweet_schedule = self.config.get_tweet_schedule()
         
+        # Very conservative rate limiting to avoid spamming Twitter
         self.rate_limiters["tweet"] = RateLimiter(
             max_per_day=tweet_schedule["max_tweets_per_day"],
-            max_per_hour=3,
+            max_per_hour=1,  # Only 1 tweet per hour max
             min_interval_minutes=tweet_schedule["min_interval_minutes"]
         )
     
@@ -135,8 +136,8 @@ class Worker:
             
             rate_limiter = self._get_rate_limiter(job.get_rate_limit_key())
             if not rate_limiter.can_execute():
-                logger.debug(f"Rate limit exceeded for {job.get_rate_limit_key()}, requeueing job")
-                await self._requeue_job(job_data)
+                logger.debug(f"Rate limit exceeded for {job.get_rate_limit_key()}, adding to retry queue")
+                await self._handle_failed_job(job_data, "Rate limit exceeded")
                 return
             
             success = await job.execute()
@@ -155,34 +156,26 @@ class Worker:
             await self._handle_failed_job(job_data, str(e))
     
     def _get_rate_limiter(self, rate_limit_key: str) -> RateLimiter:
-        """Get or create rate limiter for the given key."""
         if rate_limit_key not in self.rate_limiters:
+            # Very conservative defaults for any new job types
             self.rate_limiters[rate_limit_key] = RateLimiter(
-                max_per_day=100,  # Default limits
-                max_per_hour=10,
-                min_interval_minutes=1
+                max_per_day=10,  # Very low daily limit
+                max_per_hour=1,  # Only 1 per hour
+                min_interval_minutes=60  # Minimum 1 hour between executions
             )
-            logger.info(f"Created default rate limiter for {rate_limit_key}")
+            logger.info(f"Created conservative rate limiter for {rate_limit_key}")
         
         return self.rate_limiters[rate_limit_key]
-    
-    async def _requeue_job(self, job_data: Dict[str, Any]) -> None:
-        """Requeue a job that hit rate limits."""
-        priority = job_data.get("priority", 3)
-        queue_name = f"jobs_priority_{priority}"
-        
-        await self.queue_service.redis.lpush(queue_name, json.dumps(job_data))
-        logger.debug(f"Requeued job {job_data.get('job_id')} due to rate limits")
     
     async def _handle_failed_job(self, job_data: Dict[str, Any], error_msg: str) -> None:
         job_id = job_data.get("job_id", "unknown")
         retry_count = job_data.get("retry_count", 0)
-        max_retries = 3
+        max_retries = 1
         
         logger.warning(f"Job {job_id} failed: {error_msg} (retry {retry_count}/{max_retries})")
         
         if retry_count < max_retries:
-            retry_delay = 2 ** retry_count * 60  # Exponential backoff: 1min, 2min, 4min
+            retry_delay = 300  # 5 minute delay for retry (much longer)
             job_data["retry_count"] = retry_count + 1
             job_data["retry_after"] = (datetime.now() + timedelta(seconds=retry_delay)).isoformat()
             job_data["last_error"] = error_msg
