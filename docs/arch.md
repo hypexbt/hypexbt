@@ -10,7 +10,6 @@ The system integrates with multiple external APIs:
 - **Hyperliquid API** for market data, trading signals, and daily statistics
 - **LiquidLaunch API** for token launch and graduation events
 - **CoinGecko API** for token fundamental data
-- **Slack** for error notifications and monitoring
 
 Content is distributed across 6 categories with configurable percentages, scheduled intelligently throughout the day while respecting rate limits and maintaining tweet quality. The architecture uses Redis for reliable queue processing and is designed to easily split into multiple containers when scaling is needed.
 
@@ -67,8 +66,6 @@ graph TD
     SCRAPE --> CG
     NEWS --> TW
 
-    CONTAINER --> |Errors| SLACK[Slack Notifications]
-
     classDef container fill:#e8f5e8,stroke:#1b5e20,stroke-width:3px
     classDef jobs fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     classDef queue fill:#fff3e0,stroke:#e65100,stroke-width:2px
@@ -77,7 +74,7 @@ graph TD
     class CONTAINER,API,SCHED,WORKER,BOT container
     class SCRAPE,SIGNAL,STATS,NEWS jobs
     class REDIS queue
-    class HL,LL,CG,TW,SLACK external
+    class HL,LL,CG,TW external
 ```
 
 ### Queue Processing Architecture
@@ -315,12 +312,7 @@ graph TB
 - **Purpose**: Environment variable handling and validation
 - **Features**: API credentials, scheduling parameters, content distribution, Redis configuration
 
-#### 17. **utils/slack.py** - Error Monitoring
-
-- **Purpose**: Slack webhook notifications for errors and alerts
-- **Features**: Error reporting, system health monitoring, queue status alerts
-
-#### 18. **utils/logging_setup.py** - Logging Infrastructure
+#### 17. **utils/logging_setup.py** - Logging Infrastructure
 
 - **Purpose**: Structured logging configuration
 - **Features**: JSON logging, log levels, file output, Redis queue logging
@@ -371,7 +363,7 @@ graph TB
 - **Immediate retry**: Network errors, temporary API issues
 - **Exponential backoff**: Rate limit errors, server errors
 - **Dead letter queue**: Permanent failures after 3 retries
-- **Slack notifications**: All errors and queue status changes
+- **Logging**: All errors logged with structured format
 
 ## Deployment Architecture
 
@@ -393,12 +385,11 @@ graph TB
 
     subgraph CONFIG [Configuration]
         ENV[Environment Variables<br/>API Keys & Settings]
-        SECRETS[Platform Secrets<br/>Twitter, Slack tokens]
+        SECRETS[Platform Secrets<br/>Twitter tokens]
     end
 
     subgraph MONITOR [Monitoring]
         LOGS[Container Logs]
-        SLACK[Slack Alerts]
         METRICS[Queue Metrics]
     end
 
@@ -416,7 +407,7 @@ graph TB
     class RAILWAY,REDIS_SERVICE deploy
     class MAIN,API,SCHEDULER,WORKER app
     class ENV,SECRETS config
-    class LOGS,SLACK,METRICS monitor
+    class LOGS,METRICS monitor
 ```
 
 ## Benefits of Single Container Architecture

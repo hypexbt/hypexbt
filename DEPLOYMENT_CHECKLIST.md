@@ -82,9 +82,7 @@ This checklist will guide you through the process of deploying the hypexbt Twitt
 ## Step 6: Monitoring and Maintenance
 
 1. [ ] Set up monitoring alerts for service failures
-2. [ ] Configure Slack notifications for errors (if using Slack)
-3. [ ] Regularly check the logs for any issues
-4. [ ] Update API credentials if they expire
+2. [ ] Configure error handling and retry logic
 
 ## Troubleshooting
 
@@ -99,4 +97,3 @@ This checklist will guide you through the process of deploying the hypexbt Twitt
 - [Render.com Documentation](https://render.com/docs)
 - [Railway Documentation](https://docs.railway.app)
 - [Hyperliquid API Documentation](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api)
-

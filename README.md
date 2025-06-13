@@ -83,7 +83,7 @@ graph TB
 - **Redis Queue Processing**: Reliable background job processing with persistence
 - **Smart Scheduling**: Respects rate limits and optimal posting times
 - **Multi-source Integration**: Hyperliquid, CoinGecko, LiquidLaunch APIs
-- **Monitoring & Alerts**: Slack notifications for errors and performance
+- **Monitoring & Alerts**: Structured logging for errors and performance
 - **Future-Ready Architecture**: Easy to split into multiple containers when scaling needed
 
 ### Content Types
@@ -216,14 +216,9 @@ REDIS_URL=redis://redis:6379
 HL_API_URL=https://api.hyperliquid.xyz
 COINGECKO_API=https://api.coingecko.com/api/v3
 
-# Optional: Slack webhook for error reporting
-SLACK_WEBHOOK=your_slack_webhook_url
-
-# Tweet scheduling configuration
-MIN_TWEETS_PER_DAY=10
-MAX_TWEETS_PER_DAY=20
-MIN_INTERVAL_MINUTES=30
-MAX_INTERVAL_MINUTES=180
+# Optional: Additional configuration
+# MIN_TWEETS_PER_DAY=10
+# MAX_TWEETS_PER_DAY=20
 ```
 
 4. **Deploy**: Railway will automatically build and deploy your application

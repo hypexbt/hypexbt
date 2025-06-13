@@ -63,11 +63,10 @@ class TestTweetScheduler(unittest.TestCase):
         self.mock_coingecko_client = MagicMock()
         self.mock_coingecko_client_class.return_value = self.mock_coingecko_client
 
-        # Patch SlackNotifier initialization
-        self.slack_notifier_patcher = patch("src.core.scheduler.SlackNotifier")
-        self.mock_slack_notifier_class = self.slack_notifier_patcher.start()
-        self.mock_slack_notifier = MagicMock()
-        self.mock_slack_notifier_class.return_value = self.mock_slack_notifier
+        # Patch TweetScheduler initialization
+        self.scheduler_patcher = patch("src.agent.scheduler.TweetScheduler.__init__")
+        self.mock_scheduler_init = self.scheduler_patcher.start()
+        self.mock_scheduler_init.return_value = None
 
         for generator in [
             "hyperliquid_news",
@@ -112,7 +111,6 @@ class TestTweetScheduler(unittest.TestCase):
         self.mock_hyperliquid_client_class.assert_called_once_with(self.mock_config)
         self.mock_liquidlaunch_client_class.assert_called_once_with(self.mock_config)
         self.mock_coingecko_client_class.assert_called_once_with(self.mock_config)
-        self.mock_slack_notifier_class.assert_called_once_with(self.mock_config)
 
         # Check that generators were initialized
         self.mock_hyperliquid_news_generator_class.assert_called_once_with(
@@ -136,6 +134,8 @@ class TestTweetScheduler(unittest.TestCase):
 
         # Check that jobs were added to scheduler
         self.assertEqual(self.mock_scheduler.add_job.call_count, 5)
+
+        self.mock_config.assert_called_once()
 
     def test_generate_tweet_schedule(self):
         """Test generating a tweet schedule."""
