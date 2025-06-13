@@ -68,7 +68,7 @@ async def run_application(config: Config, host: str, port: int) -> None:
         # Import components (lazy import to avoid circular dependencies)
         from src.api.server import create_app
         from src.agent.scheduler import TweetScheduler
-        from src.queue.worker import TweetWorker
+        from src.queue.worker import Worker
         
         # Initialize components
         logger.info("Initializing components...")
@@ -78,7 +78,7 @@ async def run_application(config: Config, host: str, port: int) -> None:
         
         # Initialize scheduler and worker
         scheduler = TweetScheduler(config)
-        worker = TweetWorker(config)
+        worker = Worker(config)
         
         # Start background components
         logger.info("Starting background components...")

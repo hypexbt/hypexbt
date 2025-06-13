@@ -81,6 +81,16 @@ class TwitterClient:
                 logger.warning(f"Tweet text exceeds 280 characters, truncating: {text}")
                 text = text[:277] + "..."
 
+            # Check if we should use live Twitter API
+            if not self.config.use_live_twitter:
+                logger.info(f"🔧 MOCK MODE: Would post tweet: {text}")
+                # Return a mock response that looks like a real Twitter response
+                return {
+                    "id": f"mock_{hash(text) % 1000000}",
+                    "text": text,
+                    "edit_history_tweet_ids": [f"mock_{hash(text) % 1000000}"]
+                }
+
             # Post the tweet
             response = self.client.create_tweet(text=text, media_ids=media_ids)
 

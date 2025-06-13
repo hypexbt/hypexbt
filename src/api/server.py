@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from src.utils.config import Config
 from src.queue.service import QueueService
+from src.queue.jobs.tweet_job import TweetJob
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,11 @@ def create_app(config: Config) -> FastAPI:
         version="1.0.0",
     )
 
-    # Initialize queue service
     queue_service = QueueService(config.redis_url)
+    
+    # Store services in app state for access by other components
+    app.state.queue_service = queue_service
+    app.state.config = config
 
     @app.on_event("startup")
     async def startup_event():
@@ -110,12 +114,10 @@ def create_app(config: Config) -> FastAPI:
         Trigger a tweet to be added to the Redis queue.
         """
         try:
-            # Add tweet to Redis queue
-            job_id = await queue_service.add_tweet_job(
+            job_id = await TweetJob.add_to_queue(
+                queue_service,
                 content=request.content,
-                priority=request.priority,
-                tweet_type=request.tweet_type,
-                timestamp=datetime.utcnow().isoformat()
+                priority=request.priority
             )
             
             logger.info(f"Tweet job {job_id} queued: {request.content[:50]}...")
@@ -123,7 +125,7 @@ def create_app(config: Config) -> FastAPI:
             return TweetResponse(
                 status="queued",
                 message=f"Tweet queued successfully with priority {request.priority}",
-                tweet_id=None,  # Will be set when actually posted
+                tweet_id=None,
                 job_id=job_id
             )
         except Exception as e:
@@ -146,7 +148,7 @@ def create_app(config: Config) -> FastAPI:
         try:
             jobs = await queue_service.peek_queue(priority, count)
             return {
-                "queue": f"tweets_priority_{priority}",
+                "queue": f"jobs_priority_{priority}",
                 "count": len(jobs),
                 "jobs": jobs
             }

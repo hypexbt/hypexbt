@@ -98,3 +98,8 @@ class Config:
             "daily_stats": int(os.getenv("DAILY_STATS_PCT", "15")),
             "token_fundamentals": int(os.getenv("TOKEN_FUNDAMENTALS_PCT", "15")),
         }
+
+    @property
+    def use_live_twitter(self) -> bool:
+        """Check if live Twitter API should be used."""
+        return os.getenv("USE_LIVE_TWITTER", "false").lower() in ("true", "1", "yes", "on")
